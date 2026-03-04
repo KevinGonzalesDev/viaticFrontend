@@ -1,5 +1,6 @@
 <script setup>
 import api from '@/services/api'
+import avatar1 from '@images/avatars/avatar-1.png'
 
 const props = defineProps({
   employee: {
@@ -9,7 +10,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'cancel'])
-import avatar1 from '@images/avatars/avatar-1.png'
 
 
 
@@ -137,7 +137,7 @@ watch(
       ...accountDataLocal.value,
       ...emp,
       avatar_img: emp.avatar_img
-        ? `http://localhost:3000${emp.avatar_img}`
+        ? `${import.meta.env.VITE_API_URL}${emp.avatar_img}`
         : avatar1,
       avatarFile: null,
     }

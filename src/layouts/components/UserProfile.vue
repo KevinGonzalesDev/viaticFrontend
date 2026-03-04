@@ -1,7 +1,7 @@
 <script setup>
 import avatar1 from '@images/avatars/avatar-1.png'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ref, onMounted } from 'vue'
 
 const user = ref(null)
 const router = useRouter()
@@ -23,7 +23,7 @@ const logout = () => {
 const avatarUrl = computed(() => {
   if (!user.value?.avatar) return null
 
-  return `http://localhost:3000${user.value.avatar}`
+  return `${import.meta.env.VITE_API_URL}${user.value.avatar}`
 })
 </script>
 

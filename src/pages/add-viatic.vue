@@ -11,11 +11,11 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'close'])
-import { ref, onMounted, computed, shallowRef, watch, inject } from 'vue'
-import api from '@/services/api'
-import { VDateInput } from 'vuetify/labs/VDateInput'
 import { useSnackbar } from '@/composables/useSnackbar.js'
 import { required, requiredObject } from '@/imports/rulesImport.js'
+import api from '@/services/api'
+import { computed, onMounted, ref, watch } from 'vue'
+import { VDateInput } from 'vuetify/labs/VDateInput'
 
 const snackbar = useSnackbar()
 const formRef = ref(null)
@@ -45,6 +45,7 @@ const newViatic = ref({
   presentationDate: new Date(),
 })
 
+const baseUrl = import.meta.env.VITE_API_URL
 
 
 const listEmployees = async () => {
@@ -300,7 +301,7 @@ watch(
               <VAutocomplete v-model="newViatic.userId" :rules="[required]" :items="userList" item-value="id"
                 item-title="first_name" label="Empleado" :disabled="isEmployee">
                 <template v-slot:item="{ props, item }">
-                  <VListItem v-bind="props" :prepend-avatar="'http://localhost:3000' + item.raw.avatar_img"
+                  <VListItem v-bind="props" :prepend-avatar="baseUrl + item.raw.avatar_img"
                     :subtitle="item.raw.last_name" :title="item.raw.first_name" />
                 </template>
               </VAutocomplete>

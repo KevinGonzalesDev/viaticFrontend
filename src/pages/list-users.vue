@@ -1,12 +1,10 @@
 <script setup>
-import AddUser from './add-user.vue'
-import { ref, onMounted } from 'vue'
-import api from '@/services/api'
-import { useConfirm } from '@/composables/useConfirm'
-import { useSnackbar } from '@/composables/useSnackbar.js'
-import { headersEmployees } from '@/imports/headerstable.js'
 import BaseDatatable from '@/components/BaseDatatable.vue'
 import ButtonComponent from '@/components/buttonComponent.vue'
+import { useConfirm } from '@/composables/useConfirm'
+import { headersEmployees } from '@/imports/headerstable.js'
+import api from '@/services/api'
+import { onMounted, ref } from 'vue'
 import AccountSettings from './account-settings.vue'
 
 const confirm = useConfirm()
@@ -15,7 +13,7 @@ const search = ref('')
 const items = ref([])
 const selectedEmployee = ref(null)
 const newUser = ref(false)
-
+const baseUrl = import.meta.env.VITE_API_URL
 
 
 // 👉 donde se guarda la lista
@@ -131,7 +129,7 @@ onMounted(() => {
           <BaseDatatable v-model:search="search" :headers="headersEmployees" :items="items">
             <template #item.avatar="{ item }">
               <VAvatar size="36">
-                <VImg v-if="item.avatar_img" :src="'http://localhost:3000' + item.avatar_img" cover />
+                <VImg v-if="item.avatar_img" :src="baseUrl + item.avatar_img" cover />
                 <VIcon v-else icon="ri-user-line" />
               </VAvatar>
             </template>

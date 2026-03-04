@@ -1,12 +1,12 @@
 <script setup>
-import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
-import logo from '../../public/difatechpng.png'
+import api from '@/services/api'
 import authV1MaskDark from '@images/pages/auth-v1-mask-dark.png'
 import authV1MaskLight from '@images/pages/auth-v1-mask-light.png'
 import authV1Tree2 from '@images/pages/auth-v1-tree-2.png'
 import authV1Tree from '@images/pages/auth-v1-tree.png'
-import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
+import { useTheme } from 'vuetify'
+import logo from '../../public/difatechpng.png'
 
 const router = useRouter()
 
@@ -22,29 +22,26 @@ const authThemeMask = computed(() => {
   return vuetifyTheme.global.name.value === 'light' ? authV1MaskLight : authV1MaskDark
 })
 
+
+
 const login = async () => {
   try {
-    const res = await fetch('http://localhost:3000/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: form.value.email,
-        password: form.value.password,
-      }),
+    const { data } = await api.post('/auth/login', {
+      email: form.value.email,
+      password: form.value.password,
     })
 
-    const json = await res.json()
+    if (!data.ok) throw new Error(data.error)
 
-    if (!json.ok) throw new Error(json.error)
-
-    localStorage.setItem('token', json.token)
-    localStorage.setItem('user', JSON.stringify(json.user))
-
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
     router.push('/') // dashboard
   } catch (err) {
     alert(err.message || 'Error al iniciar sesión')
   }
 }
+
+
 
 const isPasswordVisible = ref(false)
 </script>
