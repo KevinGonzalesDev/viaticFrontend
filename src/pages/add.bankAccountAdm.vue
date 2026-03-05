@@ -17,10 +17,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'close'])
-import { ref, computed, inject, onMounted } from 'vue'
-import api from '@/services/api'
-import { required, requiredObject, email } from '@/imports/rulesImport.js'
 import { useSnackbar } from '@/composables/useSnackbar.js'
+import { required } from '@/imports/rulesImport.js'
+import api from '@/services/api'
+import { computed, onMounted, ref } from 'vue'
 
 
 
@@ -47,17 +47,17 @@ const addAccountFunc = async () => {
     if (isEdit.value) {
       // Editar cuenta bancaria
       await api.put(`/bank/`, payload)
-      snackbar.value = { show: true, message: 'Cuenta bancaria actualizada exitosamente', color: 'success' }
+      snackbar.open('Cuenta bancaria actualizada exitosamente', 'success')
     } else {
       // Crear cuenta bancaria
       await api.post('/bank/', payload)
-      snackbar.value = { show: true, message: 'Cuenta bancaria creada exitosamente', color: 'success' }
+      snackbar.open('Cuenta bancaria creada exitosamente', 'success')
     }
     emit('saved')
     emit('close')
   } catch (err) {
     console.error(err)
-    snackbar.value = { show: true, message: 'No se pudo guardar la cuenta bancaria', color: 'error' }
+    snackbar.open('No se pudo guardar la cuenta bancaria', 'error')
   }
 }
 

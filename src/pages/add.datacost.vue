@@ -1,8 +1,13 @@
 <script setup>
 const props = defineProps({
+
   cost: {
     type: Object,
     default: () => ({}),
+  },
+  district: {
+    type: [String, Number],
+    default: '',
   },
   mode: {
     type: String,
@@ -11,18 +16,19 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'close'])
-import { ref, onMounted, computed, watch } from 'vue'
+import { useSnackbar } from '@/composables/useSnackbar'
 import api from '@/services/api'
+import { computed, onMounted, ref, watch } from 'vue'
 
 const isEdit = computed(() => props.mode === 'edit')
 
-
+const snackbar = useSnackbar()
 const districts = ref([])
 const concepts = ref([])
 const frequencyList = ref(['DIARIA', 'FRECUENCIA'])
 
 const dataCostForm = ref({
-  districtId: '',
+  districtId: props.district,
   conceptId: '',
   frequencyType: 'DIARIA',
   frequency: 1,
@@ -41,18 +47,18 @@ const addDatacost = async () => {
       // Editar costo
 
       await api.put('/rates/rates', payload)
+      snackbar.open('Costo actualizado', 'success')
 
-      alert('costo actualizado')
     } else {
       // Crear costo
       await api.post('/rates/rates', payload)
-      alert('costo creado')
+      snackbar.open('Costo creado', 'success')
     }
     emit('saved')
     emit('close')
   } catch (err) {
     console.error(err)
-    alert('No se pudo guardar el costo')
+    snackbar.open('No se pudo guardar el costo', 'error')
   }
 }
 
@@ -90,6 +96,7 @@ watch(
     if (!cost) return
 
     dataCostForm.value = {
+      districtId: props.district,
       conceptId: cost.concept_id,
       frequencyType: cost.frequency_type,
       frequency: cost.frequency,
@@ -103,6 +110,7 @@ watch(
 onMounted(() => {
   loadConcepts()
   loadDistricts()
+
 })
 </script>
 
@@ -116,7 +124,6 @@ onMounted(() => {
         <VForm>
           <VRow>
             <VCol cols="12">
-              <!-- {{ cost }} -->
               <VAutocomplete v-if="!isEdit" v-model="dataCostForm.districtId" label="Distrito"
                 placeholder="Seleccione distrito" :items="districts" item-title="name" item-value="id">
                 <template v-slot:item="{ props, item }">

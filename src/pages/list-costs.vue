@@ -1,22 +1,20 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useConfirm } from '@/composables/useConfirm'
-import api from '@/services/api'
-import {
-  headersBudgetlist,
-  headersdepartmentlist,
-  headersprovincelist,
-  groupProvince,
-  headersdistricts,
-  groupDistrict,
-  headersConceptsList,
-} from '@/imports/headerstable'
-import buttonComponent from '@/components/buttonComponent.vue'
 import ButtonComponent from '@/components/buttonComponent.vue'
-import AddProvince from './add.province.vue'
+import { useConfirm } from '@/composables/useConfirm'
+import {
+  groupDistrict,
+  groupProvince,
+  headersConceptsList,
+  headersdepartmentlist,
+  headersdistricts,
+  headersprovincelist
+} from '@/imports/headerstable'
+import api from '@/services/api'
+import { onMounted, ref } from 'vue'
+import AddConcepts from './add.concepts.vue'
 import AddDatacost from './add.datacost.vue'
 import AddDistrict from './add.district.vue'
-import AddConcepts from './add.concepts.vue'
+import AddProvince from './add.province.vue'
 
 const confirm = useConfirm()
 
@@ -132,7 +130,6 @@ const listViaticrates = async () => {
   try {
     const { data } = await api.get('/rates')
 
-    console.log('data rates', data)
     Listcosts.value = data.data
   } catch (err) {
     console.error(err)
@@ -226,6 +223,14 @@ const addDatacostFunc = () => {
   showCostModal.value = true
   modeCostModal.value = 'create'
   selectedCost.value = null
+}
+
+const addDatacostDistrictFunc = (district) => {
+
+  showCostModal.value = true
+  modeCostModal.value = 'create'
+  selectedCost.value = district
+  selectedDistrict.value = district.district_id
 }
 
 const editDatacostFunc = async (item) => {
@@ -395,7 +400,7 @@ onMounted(() => {
                             </span>
 
                             <VBtn size="small" color="primary" prepend-icon="ri-add-line"
-                              @click="addBudget(district.raw)">
+                              @click="addDatacostDistrictFunc(district.raw)">
                               Agregar
                             </VBtn>
                           </VCardTitle>
@@ -477,7 +482,7 @@ onMounted(() => {
         <VCard>
           <VCardTitle>
             <VRow dense>
-              <VCol cols="12">
+              <VCol cols="12" class="d-flex justify-space-between">
                 <span class="text-h5">Provincias permitidas</span>
                 <ButtonComponent icon="ri-add-circle-line" tooltip="Agregar provincia" color="success"
                   @click="addProvinceFunc" />
@@ -513,7 +518,7 @@ onMounted(() => {
         <VCard>
           <VCardTitle>
             <VRow dense>
-              <VCol cols="12">
+              <VCol cols="12" class="d-flex justify-space-between">
                 <span class="text-h5">Distritos permitidos</span>
                 <ButtonComponent icon="ri-add-circle-line" tooltip="Agregar distrito" color="success"
                   @click="addDistrictFunc" />
@@ -549,7 +554,8 @@ onMounted(() => {
     <!-- modal de provincia para creacion y edicion -->
 
     <VDialog v-model="showCostModal" max-width="800">
-      <AddDatacost :mode="modeCostModal" :cost="selectedCost" @saved="listViaticrates" @close="showCostModal = false" />
+      <AddDatacost :mode="modeCostModal" :cost="selectedCost" :district="selectedDistrict" @saved="listViaticrates"
+        @close="showCostModal = false" />
     </VDialog>
 
     <VDialog v-model="showProvinceModal" max-width="600">

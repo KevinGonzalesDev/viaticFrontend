@@ -23,7 +23,7 @@ const logout = () => {
 const avatarUrl = computed(() => {
   if (!user.value?.avatar) return null
 
-  return `${import.meta.env.VITE_API_URL}${user.value.avatar}`
+  return `${import.meta.env.VITE_APP_URL}${user.value.avatar}`
 })
 </script>
 

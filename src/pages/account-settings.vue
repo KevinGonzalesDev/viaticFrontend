@@ -6,16 +6,14 @@ const props = defineProps({
   },
 })
 
-import AccountSettingsAccount from '@/views/pages/account-settings/AccountSettingsAccount.vue'
-import AccountSettingsNotification from '@/views/pages/account-settings/AccountSettingsNotification.vue'
-import AccountSettingsSecurity from '@/views/pages/account-settings/AccountSettingsSecurity.vue'
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 import AddUser from './add-user.vue'
 import ListUserBank from './list-user-bank.vue'
-import { useRoute } from 'vue-router'
-import { ref } from 'vue'
 
 const route = useRoute()
 const activeTab = ref(route.params.tab)
+const emit = defineEmits(['saved', 'cancel'])
 
 // tabs
 const tabs = [
@@ -45,12 +43,12 @@ const tabs = [
     <VWindow v-model="activeTab" class="mt-5 disable-tab-transition" :touch="false">
       <!-- Account -->
       <VWindowItem value="account">
-        <AddUser :employee="employee" />
+        <AddUser @saved="emit('saved')" @cancel="emit('cancel')" :employee="employee" />
       </VWindowItem>
 
       <!-- Security -->
       <VWindowItem value="security">
-        <ListUserBank :employee="employee" />
+        <ListUserBank @saved="emit('saved')" @cancel="emit('cancel')" :employee="employee" />
       </VWindowItem>
     </VWindow>
   </div>

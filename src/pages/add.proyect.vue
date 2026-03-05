@@ -13,9 +13,13 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'close'])
 const isEdit = computed(() => props.mode === 'edit')
 
-import api from '@/services/api'
-import { ref, onMounted } from 'vue'
 
+import { useSnackbar } from '@/composables/useSnackbar'
+import api from '@/services/api'
+import { onMounted, ref } from 'vue'
+
+
+const snackbar = useSnackbar()
 const clients = ref([])
 const ubications = ref([])
 const companies = ref([])
@@ -35,7 +39,7 @@ const loadClients = async () => {
     clients.value = data.data
   } catch (err) {
     console.error(err)
-    alert('No se pudieron cargar los clientes')
+    snackbar.open('No se pudieron cargar los clientes', 'error')
   }
 }
 
@@ -46,7 +50,7 @@ const loadUbicationsWid = async () => {
     ubications.value = data.data
   } catch (err) {
     console.error(err)
-    alert('No se pudieron cargar las ubicaciones')
+    snackbar.open('No se pudieron cargar las ubicaciones', 'error')
   }
 }
 
@@ -61,7 +65,7 @@ const loadCompanies = async () => {
     }
   } catch (err) {
     console.error(err)
-    alert('No se pudieron cargar las empresas')
+    snackbar.open('No se pudieron cargar las empresas', 'error')
   }
 }
 
@@ -73,17 +77,17 @@ const addProyectFunc = async () => {
     if (isEdit.value) {
       // Editar provincia
       await api.put(`/proyects/`, payload)
-      alert('Proyecto actualizado')
+      snackbar.open('Proyecto actualizado', 'success')
     } else {
       // Crear provincia
       await api.post('/proyects/', payload)
-      alert('Proyecto creado')
+      snackbar.open('Proyecto creado', 'success')
     }
     emit('saved')
     emit('close')
   } catch (err) {
     console.error(err)
-    alert('No se pudo guardar el proyecto')
+    snackbar.open('No se pudo guardar el proyecto', 'error')
   }
 }
 

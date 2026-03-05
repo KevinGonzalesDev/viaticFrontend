@@ -11,9 +11,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'close'])
-import { ref, onMounted, computed } from 'vue'
-import api from '@/services/api'
 import { useSnackbar } from '@/composables/useSnackbar'
+import api from '@/services/api'
+import { computed, onMounted, ref } from 'vue'
 
 
 
@@ -63,7 +63,6 @@ onMounted(() => {
 <template>
   <div>
     <VCard>
-      {{ concept }}
       <VCardTitle>{{ isEdit ? 'Editar Concepto' : 'Agregar Concepto' }}</VCardTitle>
       <VCardText>
         <VForm>

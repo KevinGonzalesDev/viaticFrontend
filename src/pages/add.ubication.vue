@@ -13,9 +13,12 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'close'])
 
 
+import { useSnackbar } from '@/composables/useSnackbar'
 import api from '@/services/api'
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
+
+const snackbar = useSnackbar()
 const isEdit = computed(() => props.mode === 'edit')
 const clientList = ref([])
 const districtList = ref([])
@@ -57,17 +60,17 @@ const addUbicationfunc = async () => {
     if (isEdit.value) {
       // Editar ubicacion
       await api.put(`/proyects/ubications/`, payload)
-      alert('Ubicacion actualizada')
+      snackbar.open('Ubicacion actualizada', 'success')
     } else {
       // Crear ubicacion
       await api.post('/proyects/ubications', payload)
-      alert('Ubicacion creada')
+      snackbar.open('Ubicacion creada', 'success')
     }
     emit('saved')
     emit('close')
   } catch (err) {
     console.error(err)
-    alert('No se pudo guardar la ubicacion')
+    snackbar.open('No se pudo guardar la ubicacion', 'error')
   }
 }
 

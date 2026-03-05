@@ -45,7 +45,7 @@ const newViatic = ref({
   presentationDate: new Date(),
 })
 
-const baseUrl = import.meta.env.VITE_API_URL
+const baseUrl = import.meta.env.VITE_APP_URL
 
 
 const listEmployees = async () => {

@@ -11,11 +11,13 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'close'])
-import { ref, computed, inject, onMounted } from 'vue'
+import { useSnackbar } from '@/composables/useSnackbar'
+import { email, required } from '@/imports/rulesImport.js'
 import api from '@/services/api'
-import { required, requiredObject, email } from '@/imports/rulesImport.js'
+import { computed, onMounted, ref } from 'vue'
 
 const user = JSON.parse(localStorage.getItem('user'))
+const snackbar = useSnackbar()
 
 const CompanyForm = ref({
   name: '',
@@ -30,7 +32,6 @@ const CompanyForm = ref({
   companyId: null,
 })
 
-const snackbar = inject('snackbar')
 
 const addCompanyFunc = async () => {
   // lógica para agregar empresa
@@ -40,17 +41,17 @@ const addCompanyFunc = async () => {
     if (isEdit.value) {
       // Editar empresa
       await api.put(`/companies/`, payload)
-      snackbar.value = { show: true, message: 'Empresa actualizada exitosamente', color: 'success' }
+      snackbar.open('Empresa actualizada exitosamente', 'success')
     } else {
       // Crear empresa
       await api.post('/companies/', payload)
-      snackbar.value = { show: true, message: 'Empresa creada exitosamente', color: 'success' }
+      snackbar.open('Empresa creada exitosamente', 'success')
     }
     emit('saved')
     emit('close')
   } catch (err) {
     console.error(err)
-    snackbar.value = { show: true, message: 'No se pudo guardar la empresa', color: 'error' }
+    snackbar.open('No se pudo guardar la empresa', 'error')
   }
 }
 

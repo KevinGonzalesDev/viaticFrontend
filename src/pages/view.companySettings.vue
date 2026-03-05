@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import api from '@/services/api'
-import AddCompany from './add.company.vue'
-import AddBankAccountAdm from './add.bankAccountAdm.vue'
 import ButtonComponent from '@/components/buttonComponent.vue'
+import api from '@/services/api'
+import { onMounted, ref } from 'vue'
+import AddBankAccountAdm from './add.bankAccountAdm.vue'
+import AddCompany from './add.company.vue'
 
 
 
@@ -39,6 +39,8 @@ const addAccountFunc = (companyId) => {
   showAccountModal.value = true
   modeAccountModal.value = 'create'
   selectedCompanyForAccount.value = companyId
+  console.log(companyId, 'companyId');
+
 }
 
 const editAccountFunc = (account) => {
@@ -167,6 +169,22 @@ onMounted(() => {
             <div class="d-flex justify-center mt-4">
               <VPagination v-model="page" :length="pageCount" size="small" rounded />
             </div>
+          </template>
+
+          <template #no-data>
+            <VCard elevation="0" class="d-flex flex-column align-center justify-center ma-6" min-height="200">
+              <VIcon size="48" color="grey-lighten-1" class="mb-2">
+                ri-inbox-line
+              </VIcon>
+
+              <span class="text-grey-darken-1 text-body-1">
+                No hay registros para mostrar
+              </span>
+
+              <span class="text-grey text-caption mt-1">
+                Intenta ajustar los filtros o crea un nuevo registro
+              </span>
+            </VCard>
           </template>
         </VDataIterator>
       </VCol>

@@ -1,6 +1,7 @@
 <script setup>
+import { useSnackbar } from '@/composables/useSnackbar'
 import api from '@/services/api'
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps({
   client: {
@@ -13,6 +14,7 @@ const props = defineProps({
   },
 })
 
+const snackbar = useSnackbar()
 const emit = defineEmits(['saved', 'close'])
 const isEdit = computed(() => props.mode === 'edit')
 
@@ -32,17 +34,17 @@ const addClientfunc = async () => {
     if (isEdit.value) {
       // Editar provincia
       await api.put(`/proyects/clients/`, payload)
-      alert('Cliente actualizado')
+      snackbar.open('Cliente actualizado', 'success')
     } else {
       // Crear provincia
       await api.post('/proyects/clients/', payload)
-      alert('Cliente creado')
+      snackbar.open('Cliente creado', 'success')
     }
     emit('saved')
     emit('close')
   } catch (err) {
     console.error(err)
-    alert('No se pudo guardar el cliente')
+    snackbar.open('No se pudo guardar el cliente', 'error')
   }
 }
 

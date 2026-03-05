@@ -1,6 +1,7 @@
 <script setup>
+import { useSnackbar } from '@/composables/useSnackbar.js'
 import api from '@/services/api'
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const props = defineProps({
   district: {
@@ -13,6 +14,7 @@ const props = defineProps({
   },
 })
 
+const snackbar = useSnackbar()
 const emit = defineEmits(['saved', 'close'])
 const provinceList = ref([])
 
@@ -36,24 +38,24 @@ const loadProvinceList = async () => {
 }
 
 const addDistrict = async () => {
-  // lógica para agregar provincia
+  // lógica para agregar distrito
   try {
     const payload = { ...districtForm.value }
 
     if (isEdit.value) {
-      // Editar provincia
+      // Editar distrito
       await api.put(`/locations/districts/`, payload)
-      alert('Provincia actualizada')
+      snackbar.open('Distrito actualizado', 'success')
     } else {
-      // Crear provincia
+      // Crear distrito
       await api.post('/locations/districts', payload)
-      alert('Provincia creada')
+      snackbar.open('Distrito creado', 'success')
     }
     emit('saved')
     emit('close')
   } catch (err) {
     console.error(err)
-    alert('No se pudo guardar el distrito')
+    snackbar.open('No se pudo guardar el distrito', 'error')
   }
 }
 

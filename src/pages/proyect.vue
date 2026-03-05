@@ -1,15 +1,17 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import api from '@/services/api'
-import { headersProyects, headersClients, headersUbications, groupUbications } from '@/imports/headerstable'
 import ButtonComponent from '@/components/buttonComponent.vue'
+import { useSnackbar } from '@/composables/useSnackbar'
+import { groupUbications, headersClients, headersProyects, headersUbications } from '@/imports/headerstable'
+import api from '@/services/api'
+import { onMounted, ref } from 'vue'
 
 import AddClient from './add.client.vue'
-import AddUbication from './add.ubication.vue'
 import AddProyect from './add.proyect.vue'
+import AddUbication from './add.ubication.vue'
 
 
 
+const snackbar = useSnackbar()
 // variables de estado de modal de cliente
 const showClientModal = ref(false)
 const selectedClient = ref(null)

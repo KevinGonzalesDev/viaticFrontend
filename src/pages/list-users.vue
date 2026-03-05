@@ -13,7 +13,7 @@ const search = ref('')
 const items = ref([])
 const selectedEmployee = ref(null)
 const newUser = ref(false)
-const baseUrl = import.meta.env.VITE_API_URL
+const baseUrl = import.meta.env.VITE_APP_URL
 
 
 // 👉 donde se guarda la lista

@@ -11,9 +11,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'close'])
+import { useSnackbar } from '@/composables/useSnackbar.js'
 import api from '@/services/api'
-import { ref, onMounted, computed, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
+
+const snackbar = useSnackbar()
 const departmentList = ref([])
 
 const proviceForm = ref({
@@ -43,17 +46,17 @@ const addProvince = async () => {
     if (isEdit.value) {
       // Editar provincia
       await api.put(`/locations/provinces/`, payload)
-      alert('Provincia actualizada')
+      snackbar.open('Provincia actualizada', 'success')
     } else {
       // Crear provincia
       await api.post('/locations/provinces', payload)
-      alert('Provincia creada')
+      snackbar.open('Provincia creada', 'success')
     }
     emit('saved')
     emit('close')
   } catch (err) {
     console.error(err)
-    alert('No se pudo guardar la provincia')
+    snackbar.open('No se pudo guardar la provincia', 'error')
   }
 }
 

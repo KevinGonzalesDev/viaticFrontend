@@ -106,11 +106,15 @@ const guardarEmpleado = async () => {
       form.append('avatar', accountDataLocal.value.avatarFile)
     }
 
+    console.log(accountDataLocal.value, 'formData:', form);
+
+
     const res = isEdit
       ? await api.put(url, form)
       : await api.post(url, form)
 
     emit('saved')
+    emit('cancel')
 
     return res.data
 
@@ -137,7 +141,7 @@ watch(
       ...accountDataLocal.value,
       ...emp,
       avatar_img: emp.avatar_img
-        ? `${import.meta.env.VITE_API_URL}${emp.avatar_img}`
+        ? `${import.meta.env.VITE_APP_URL}${emp.avatar_img}`
         : avatar1,
       avatarFile: null,
     }
