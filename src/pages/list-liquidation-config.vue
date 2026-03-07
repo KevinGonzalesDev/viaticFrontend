@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue'
 import ButtonComponent from '@/components/buttonComponent.vue';
-import api from '@/services/api'
+import { groupConfigurations, headersLiquidationConfig } from '@/imports/headerstable.js';
+import api from '@/services/api';
+import { onMounted, ref } from 'vue';
 import AddConfig from './add.config.vue';
-import { headersLiquidationConfig, groupConfigurations } from '@/imports/headerstable.js';
 
 const listConfigurations = ref([])
 
@@ -56,7 +56,7 @@ onMounted(() => {
 <template>
   <div>
     <VRow>
-      <VCol cols="12" md="8">
+      <VCol cols="12" md="12">
         <VCard>
           <VCardTitle class="d-flex justify-space-between">
             Configuración de opciones de documentacion
@@ -74,24 +74,7 @@ onMounted(() => {
           </VCardText>
         </VCard>
       </VCol>
-      <VCol cols="12" md="4">
-        <VCard>
-          <VCardTitle>
-            <span class="text-h6">CONFIGURACIONES DE LA EMPRESA</span>
-          </VCardTitle>
-          <VCardText>
-            <div class="d-flex align-center mb-2">
-              <VIcon color="primary" class="me-2">ri-building-fill</VIcon>
-              <span>NOMBRE DE LA EMPRESA :</span>
 
-            </div>
-            <div class="d-flex align-center mb-2">
-              <VIcon color="grey" class="me-2">mdi-circle</VIcon>
-              <span>Configuración inactiva</span>
-            </div>
-          </VCardText>
-        </VCard>
-      </VCol>
     </VRow>
     <VDialog v-model="showConfigModal" max-width="500px">
       <AddConfig :config="selectedConfig" :mode="modeConfigModal" @close="showConfigModal = false"

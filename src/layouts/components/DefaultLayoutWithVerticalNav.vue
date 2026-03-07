@@ -4,21 +4,23 @@ import VerticalNavLayout from '@layouts/components/VerticalNavLayout.vue'
 import logo from '../../../public/difatechpng.png'
 
 // Components
-import Footer from '@/layouts/components/Footer.vue'
 import NavbarThemeSwitcher from '@/layouts/components/NavbarThemeSwitcher.vue'
 import UserProfile from '@/layouts/components/UserProfile.vue'
+import { onMounted } from 'vue'
 
-import { ref } from 'vue'
 
 const user = JSON.parse(localStorage.getItem('user')) || {}
+const saludo = ref('')
 
-
-// const user = ref(userdata ? JSON.parse(userdata) : null)
+onMounted(() => {
+  const storedUser = localStorage.getItem('user')
+  if (storedUser) {
+    user.value = JSON.parse(storedUser)
+    saludo.value = `Hola, ${user.value.name}`
+  }
+})
 </script>
 
-
-
-// // Componente que funciona como el contenedor del navegador vertical
 
 <template>
   <VerticalNavLayout>
@@ -30,15 +32,11 @@ const user = JSON.parse(localStorage.getItem('user')) || {}
           <VIcon icon="ri-menu-line" />
         </IconBtn>
 
-
-
+        <div>
+          {{ saludo }}
+        </div>
         <VSpacer />
 
-
-
-        <!-- Hola,
-        {{ user.name }} -->
-        <!-- <VIcon icon="ri-notification-line" /> -->
 
         <NavbarThemeSwitcher class="me-2" />
 
@@ -55,9 +53,7 @@ const user = JSON.parse(localStorage.getItem('user')) || {}
         <!-- eslint-enable -->
       </RouterLink>
 
-      <IconBtn class="d-block d-lg-none" @click="toggleIsOverlayNavActive(false)">
-        <VIcon icon="ri-close-line" />
-      </IconBtn>
+
     </template>
 
     <template #vertical-nav-content>
@@ -67,10 +63,7 @@ const user = JSON.parse(localStorage.getItem('user')) || {}
     <!-- 👉 Pages -->
     <slot />
 
-    <!-- 👉 Footer -->
-    <template #footer>
-      <Footer />
-    </template>
+
   </VerticalNavLayout>
 </template>
 

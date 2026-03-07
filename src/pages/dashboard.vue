@@ -1,14 +1,5 @@
 <script setup>
-import AnalyticsAward from '@/views/dashboard/AnalyticsAward.vue'
-import AnalyticsBarCharts from '@/views/dashboard/AnalyticsBarCharts.vue'
-import AnalyticsDepositWithdraw from '@/views/dashboard/AnalyticsDepositWithdraw.vue'
-import AnalyticsSalesByCountries from '@/views/dashboard/AnalyticsSalesByCountries.vue'
-import AnalyticsTotalEarning from '@/views/dashboard/AnalyticsTotalEarning.vue'
-import AnalyticsTotalProfitLineCharts from '@/views/dashboard/AnalyticsTotalProfitLineCharts.vue'
-import AnalyticsTransactions from '@/views/dashboard/AnalyticsTransactions.vue'
-import AnalyticsUserTable from '@/views/dashboard/AnalyticsUserTable.vue'
-import AnalyticsWeeklyOverview from '@/views/dashboard/AnalyticsWeeklyOverview.vue'
-import CardStatisticsVertical from '@core/components/cards/CardStatisticsVertical.vue'
+import { onMounted, ref } from 'vue'
 
 const totalProfit = {
   title: 'Total Profit',
@@ -27,10 +18,46 @@ const newProject = {
   change: -18,
   subtitle: 'Yearly Project',
 }
+
+const saludo = ref('')
+
+onMounted(() => {
+  document.title = 'Dashboard - Viaticos'
+  const storedUser = localStorage.getItem('user')
+  if (storedUser) {
+    const user = JSON.parse(storedUser)
+    saludo.value = `Información de, ${user.name}`
+  }
+})
+
 </script>
 
 <template>
   <VRow class="match-height">
+    <VCol cols="12">
+      <h2 class="text-h4 font-weight-bold mb-0">
+        {{ saludo }}
+      </h2>
+    </VCol>
+    <VCol cols="12">
+      <p class="mb-0">
+        Bienvenido al panel de control de Viaticos, aquí puedes encontrar un resumen de tus actividades recientes,
+        estadísticas y acceso rápido a las funciones principales.
+      </p>
+    </VCol>
+    <VCol cols="12">
+      <VCard>
+        <VCardText>
+          <p class="mb-0">
+            Defina sus parametros a rastrear.
+          </p>
+        </VCardText>
+      </VCard>
+    </VCol>
+
+    <!-- <VCol cols="12">
+          <UpgradeToPro />
+        </VCol> -->
 
     <!-- <VCol cols="12" md="4">
       <AnalyticsAward />

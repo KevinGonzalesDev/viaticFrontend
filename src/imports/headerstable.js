@@ -40,7 +40,6 @@ export const headersoliAdmviatics = [
     { title: 'Codigo', key: 'code' },
     { title: 'Empleado', key: 'employee_name' },
     { title: 'Tipo de Viático', align: 'center', key: 'type' },
-    { title: 'Cliente', align: 'center', key: 'client_data' },
     { title: 'Proyecto', align: 'left', key: 'proyect_data' },
     { title: 'Fechas', align: 'left', key: 'date_data' },
     { title: 'Estado', align: 'center', key: 'status' },
@@ -146,6 +145,15 @@ export const headersDepositsList = [
     { title: 'Voucher', key: 'voucher' },
     { title: 'Tipo', key: 'type' },
     { title: 'Acciones', key: 'actions' },
+]
+
+export const headersDepositsUserList = [
+    { title: 'Codigo', key: 'code' },
+    { title: 'Fecha', key: 'date_deposit' },
+    { title: 'Monto', key: 'amount' },
+    { title: 'Cuentas', key: 'accounts' },
+    { title: 'Voucher', key: 'voucher' },
+    { title: 'Tipo', key: 'type' },
 ]
 
 export const headersConceptsList = [

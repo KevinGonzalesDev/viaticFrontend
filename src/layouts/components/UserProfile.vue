@@ -55,27 +55,10 @@ const avatarUrl = computed(() => {
             <VListItemSubtitle>{{ user?.email }}</VListItemSubtitle>
           </VListItem>
           <VListItem>
-            <VListItemSubtitle>
-              <VChip append-icon="ri-user-line">{{ user?.roles?.[0] }}</VChip>
+            <VListItemSubtitle class="d-flex justify-center">
+              <VChip label size="x-small" append-icon="ri-user-line">{{ user?.roles?.[0] }}</VChip>
             </VListItemSubtitle>
           </VListItem>
-          <VDivider class="my-2" />
-
-          <!-- 👉 Settings -->
-          <VListItem link>
-            <template #prepend>
-              <VIcon class="me-2" icon="ri-settings-4-line" size="22" />
-            </template>
-            <VListItemTitle>Settings</VListItemTitle>
-          </VListItem>
-
-          <!-- 👉 Pricing -->
-
-
-          <!-- 👉 FAQ -->
-
-
-          <!-- Divider -->
           <VDivider class="my-2" />
 
           <!-- 👉 Logout -->

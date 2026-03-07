@@ -36,7 +36,6 @@ const BankAccountForm = ref({
   cci: '',
   currency: '',
   status: true,
-  bankId: null,
 })
 
 const addAccountFunc = async () => {

@@ -54,6 +54,8 @@ const loadAllCompanies = async () => {
   try {
     const response = await api.get('/companies')
 
+    console.log(response.data);
+
     Liscompanies.value = response.data.data
   } catch (error) {
     console.error('Error fetching companies:', error)

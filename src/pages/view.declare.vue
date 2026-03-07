@@ -8,19 +8,18 @@ const props = defineProps({
 
 const emit = defineEmits(['loaded', 'close'])
 
-import { ref, onMounted } from 'vue'
-import api from '@/services/api'
+import BaseDatatable from '@/components/BaseDatatable.vue'
 import ButtonComponent from '@/components/buttonComponent.vue'
 import ConfirmDialog from '@/components/modalConfirmation.vue'
-import BaseDatatable from '@/components/BaseDatatable.vue'
 import { useSnackbar } from '@/composables/useSnackbar.js'
-import { VDateInput } from 'vuetify/labs/VDateInput'
 import {
-  headersLiquidationsUser,
-  headersMovilityUser,
   headersDDJJAlimUser,
   headersDDJJMovUser,
+  headersLiquidationsUser,
+  headersMovilityUser,
 } from '@/imports/headerstable'
+import api from '@/services/api'
+import { onMounted, ref } from 'vue'
 import AddDeclare from './add.declare.vue'
 
 const snackbar = useSnackbar()
@@ -184,7 +183,8 @@ onMounted(() => {
       <VCol cols="12">
         <VCard>
           <VCardText>
-            <BaseDatatable tabletitle="LIQUIDACION" :headers="headersLiquidationsUser" :items="viaticItemsLiquidation">
+            <BaseDatatable tabletitle="LIQUIDACION" :headers="headersLiquidationsUser" :items="viaticItemsLiquidation"
+              dontfooter>
               <template #item.option_name="{ item }">
                 {{ item.optionobject ? item.optionobject.label : '' }}
               </template>
@@ -211,7 +211,8 @@ onMounted(() => {
       <VCol cols="12">
         <VCard>
           <VCardText>
-            <BaseDatatable tabletitle="MOVILIDAD LIMA" :headers="headersMovilityUser" :items="viaticItemsMovility">
+            <BaseDatatable tabletitle="MOVILIDAD LIMA" :headers="headersMovilityUser" :items="viaticItemsMovility"
+              dontfooter>
               <!-- Aquí puedes agregar los detalles adicionales de la declaración -->
               <template #item.option_name="{ item }">
                 {{ item.optionobject ? item.optionobject.label : '' }}
@@ -240,7 +241,8 @@ onMounted(() => {
             DECLARACION JURADA
           </VCardTitle>
           <VCardText>
-            <BaseDatatable tabletitle="ALIMENTACION" :headers="headersDDJJAlimUser" :items="viaticItemsAliDeclaration">
+            <BaseDatatable tabletitle="ALIMENTACION" :headers="headersDDJJAlimUser" :items="viaticItemsAliDeclaration"
+              dontfooter>
               <!-- Aquí puedes agregar los detalles adicionales de la declaración -->
               <template #item.option_name="{ item }">
                 {{ item.optionobject ? item.optionobject.label : '' }}

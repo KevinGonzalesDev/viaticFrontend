@@ -40,6 +40,9 @@ const dataCostForm = ref({
 
 const addDatacost = async () => {
   // lógica para agregar costo
+
+  dataCostForm.value.frequency = Number(dataCostForm.value.frequency)
+
   try {
     const payload = { ...dataCostForm.value }
 

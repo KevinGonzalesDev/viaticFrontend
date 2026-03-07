@@ -1,10 +1,10 @@
 <script setup>
-import { onMounted, ref, inject } from 'vue'
-import api from '@/services/api'
-import { headersoliAdmviatics } from '@/imports/headerstable'
+import BaseDatatable from '@/components/BaseDatatable.vue'
 import ButtonComponent from '@/components/buttonComponent.vue'
 import ConfirmDialog from '@/components/modalConfirmation.vue'
-import BaseDatatable from '@/components/BaseDatatable.vue'
+import { headersoliAdmviatics } from '@/imports/headerstable'
+import api from '@/services/api'
+import { inject, onMounted, ref } from 'vue'
 
 
 const snackbar = inject('snackbar')
@@ -96,7 +96,7 @@ onMounted(() => {
     <VRow>
       <VCol cols="12">
         <h1 class="text-h4 font-weight-bold mb-0">
-          Lista de Viáticos Administrativos
+          Aprobacion de Viáticos
         </h1>
       </VCol>
       <VCol cols="12">
@@ -106,30 +106,32 @@ onMounted(() => {
             {{ item.user_name }} {{ item.user_lastname }}
           </template>
 
-          <template #item.client_data="{ item }">
-            {{ item.client_name }} {{ item.client_location }}
-          </template>
-
           <template #item.proyect_data="{ item }">
-            <span class="d-block mb-1">{{ item.project_name }}</span>
-            <VChip color="blue-grey" label size="x-small">
-              {{ item.project_code }}
-            </VChip>
+            <div class="font-weight-medium">
+              {{ item.project_name }} - {{ item.project_code }}
+            </div>
+
+            <div class="text-caption text-grey">
+              {{ item.client_name }} · {{ item.location_name }}
+            </div>
+
           </template>
 
           <template #item.date_data="{ item }">
-            <VChip size="small" color="secondary" label>
-              Inicio :{{ new Date(item.start_mov).toLocaleDateString() }}
-            </VChip>
-            <VChip size="small" color="secondary" label>
-              Fin : {{ new Date(item.end_mov).toLocaleDateString() }}
-            </VChip>
-            <VChip v-if="item.start_prov_date" size="small" color="info" label>
-              LLeg Prov :{{ new Date(item.start_prov_date).toLocaleDateString() }}
-            </VChip>
-            <VChip v-if="item.end_prov_date" size="small" color="info" label>
-              Sal Prov :{{ new Date(item.end_prov_date).toLocaleDateString() }}
-            </VChip>
+            <div class="d-flex flex-column ga-1 ">
+              <VChip size="small" color="secondary" label>
+                Inicio :{{ new Date(item.start_mov).toLocaleDateString() }}
+              </VChip>
+              <VChip size="small" color="secondary" label>
+                Fin : {{ new Date(item.end_mov).toLocaleDateString() }}
+              </VChip>
+              <VChip v-if="item.start_prov_date" size="small" color="info" label>
+                LLeg Prov :{{ new Date(item.start_prov_date).toLocaleDateString() }}
+              </VChip>
+              <VChip v-if="item.end_prov_date" size="small" color="info" label>
+                Sal Prov :{{ new Date(item.end_prov_date).toLocaleDateString() }}
+              </VChip>
+            </div>
           </template>
 
 

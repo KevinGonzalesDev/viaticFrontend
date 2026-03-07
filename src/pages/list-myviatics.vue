@@ -1,13 +1,13 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { VDateInput } from 'vuetify/labs/VDateInput'
-import api from '@/services/api'
-import AddViatic from './add-viatic.vue'
-import { headerviaticsUser } from '@/imports/headerstable'
+import BaseDatatable from '@/components/BaseDatatable.vue'
 import ButtonComponent from '@/components/buttonComponent.vue'
 import ConfirmDialog from '@/components/modalConfirmation.vue'
-import BaseDatatable from '@/components/BaseDatatable.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { headerviaticsUser } from '@/imports/headerstable'
+import api from '@/services/api'
+import { onMounted, ref } from 'vue'
+import AddViatic from './add-viatic.vue'
+import ListDepositsUser from './list.deposits-user.vue'
 
 
 
@@ -20,11 +20,19 @@ const showConfirm = ref(false)
 const viaticIdToDelete = ref(null)
 const snackbar = useSnackbar()
 
+// estados de vista de depositos
+const depositModal = ref(false)
+const selectedDeposit = ref(null)
+
 
 const viaticList = ref([])
 const user = ref()
 const search = ref('')
-const saludo = ref('')
+
+const openListDepositsModal = (viatic) => {
+  selectedViatic.value = viatic
+  depositModal.value = true
+}
 
 const openNewViaticModal = () => {
   mode.value = 'create'
@@ -93,7 +101,6 @@ onMounted(() => {
   const storedUser = localStorage.getItem('user')
   if (storedUser) {
     user.value = JSON.parse(storedUser)
-    saludo.value = `Hola, ${user.value.name}`
   }
   ListViaticsbyId()
 })
@@ -101,8 +108,12 @@ onMounted(() => {
 
 <template>
   <div>
-    <VDialog v-model="viaticModal" max-width="800" persistent>
+    <v-dialog v-model="viaticModal" max-width="800" scrollable>
       <AddViatic :mode="mode" :viatic="selectedViatic" @close="closeViaticModal" @saved="ListViaticsbyId" />
+    </v-dialog>
+
+    <VDialog v-model="depositModal" max-width="800" scrollable>
+      <ListDepositsUser :viatic="selectedViatic" @close="ListViaticsbyId" @cancel="depositModal = false" />
     </VDialog>
 
     <ConfirmDialog v-model="showConfirm" title="Eliminar solicitud de viático"
@@ -112,8 +123,7 @@ onMounted(() => {
     <h1>Listado de Viáticos</h1>
     <!-- Aquí va el contenido del listado de viáticos -->
     <VRow>
-      <VCol cols="12" class="d-flex justify-space-between align-center">
-        {{ saludo }}
+      <VCol cols="12" class="d-flex justify-end align-center">
         <VBtn color="primary" @click="openNewViaticModal">Solicitar viatico</VBtn>
       </VCol>
       <VCol cols="12">
@@ -125,33 +135,32 @@ onMounted(() => {
           </template>
 
           <template #item.project_data="{ item }">
-            <div class="text-title-small">
-              <VChip size="small" color="primary" label>
-                {{ item.project_name }}
-              </VChip>
-              -
-              <VChip size="small" color="secondary" label>
-                {{ item.client_name }}
-              </VChip>
+            <div class="font-weight-medium">
+              {{ item.project_name }}
             </div>
-            <VChip size="small" color="info" label>
-              {{ item.location_name }}
-            </VChip>
+
+            <div class="text-caption text-grey">
+              {{ item.client_name }} · {{ item.location_name }}
+            </div>
+
           </template>
 
           <template #item.date_details="{ item }">
-            <VChip size="small" color="secondary" label>
-              Inicio :{{ new Date(item.start_mov).toLocaleDateString() }}
-            </VChip>
-            <VChip size="small" color="secondary" label>
-              Fin : {{ new Date(item.end_mov).toLocaleDateString() }}
-            </VChip>
-            <VChip v-if="item.start_prov_date" size="small" color="info" label>
-              LLeg Prov :{{ new Date(item.start_prov_date).toLocaleDateString() }}
-            </VChip>
-            <VChip v-if="item.end_prov_date" size="small" color="info" label>
-              Sal Prov :{{ new Date(item.end_prov_date).toLocaleDateString() }}
-            </VChip>
+            <div class="d-flex flex-column ga-1 ">
+              <VChip size="small" color="secondary" label>
+                Inicio :{{ new Date(item.start_mov).toLocaleDateString() }}
+              </VChip>
+              <VChip size="small" color="secondary" label>
+                Fin : {{ new Date(item.end_mov).toLocaleDateString() }}
+              </VChip>
+              <VChip v-if="item.start_prov_date" size="small" color="info" label>
+                LLeg Prov :{{ new Date(item.start_prov_date).toLocaleDateString() }}
+              </VChip>
+              <VChip v-if="item.end_prov_date" size="small" color="info" label>
+                Sal Prov :{{ new Date(item.end_prov_date).toLocaleDateString() }}
+              </VChip>
+            </div>
+
           </template>
 
           <template #item.status="{ item }">
@@ -174,7 +183,9 @@ onMounted(() => {
           <template #item.actions="{ item }">
             <ButtonComponent v-if="item.status === 'SOLICITED'" tooltip="Editar solicitud" icon="ri-edit-line"
               @click="openEditViaticModal(item)" />
-            <ButtonComponent v-if="item.status != 'SOLICITED'" icon="ri-wallet-line" tooltip="Ver mis depositos" />
+            <ButtonComponent v-if="item.status != 'SOLICITED'" icon="ri-wallet-line" tooltip="Ver mis depositos"
+              @click="openListDepositsModal(item)" />
+
             <ButtonComponent v-if="item.status === 'SOLICITED'" icon="ri-delete-bin-line" tooltip="Eliminar viatico"
               @click="openDeleteViaticConfirm(item.id)" />
           </template>

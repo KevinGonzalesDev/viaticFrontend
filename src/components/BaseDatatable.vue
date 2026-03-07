@@ -3,6 +3,7 @@ defineProps({
   headers: Array,
   items: Array,
   loading: Boolean,
+  dontfooter: Boolean,
   tabletitle: String,
   itemKey: {
     type: String,
@@ -22,13 +23,13 @@ const emit = defineEmits(['update:search'])
           {{ tabletitle }}
         </h2>
       </VCol>
-      <VCol cols="12">
+      <VCol v-if="search" cols="12">
         <VTextField @update:model-value="val => emit('update:search', val)" label="Buscar..." variant="outlined"
           clearable class="mb-4" />
       </VCol>
       <VCol cols="12">
         <VDataTable :headers="headers" :items="items" :loading="loading" :item-key="itemKey"
-          class="elevation-1 custom-table" :search="search">
+          class="elevation-1 custom-table" :search="search" :hide-default-footer="dontfooter">
           <!-- Slot dinámico para cualquier columna -->
           <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
             <slot :name="slotName" v-bind="slotProps" />
@@ -59,5 +60,6 @@ const emit = defineEmits(['update:search'])
 <style scoped>
 .custom-table {
   border-radius: 12px;
+  min-height: 320px;
 }
 </style>

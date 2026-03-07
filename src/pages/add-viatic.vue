@@ -278,99 +278,96 @@ watch(
 </script>
 
 <template>
-  <div>
-    <VForm ref="formRef" lazy-validation>
-      <VCard max-width="800">
-        <VCardTitle class="d-flex justify-space-between">
-          {{ isEdit ? 'Editar solicitud' : 'Nueva solicitud' }}
-          <VChip :color="repeatViatic ? 'error' : 'success'" label>
-            {{ newViatic.codeViatic }}
-          </VChip>
-          <!-- {{ repeatViatic ? '(Código disponible)' : '(Código repetido)' }} -->
-        </VCardTitle>
-        <VDivider />
-        <VCardText>
-          <VRow>
-            <VCol cols="12" sm="12" class="d-flex justify-center">
-              <VRadioGroup label="Tipo de viaje" v-model="newViatic.type" inline>
-                <VRadio label="Lima" value="LIMA" />
-                <VRadio label="Provincia" value="PROVINCIA" />
-              </VRadioGroup>
-            </VCol>
-            <VCol cols="12" sm="6">
-              <VAutocomplete v-model="newViatic.userId" :rules="[required]" :items="userList" item-value="id"
-                item-title="first_name" label="Empleado" :disabled="isEmployee">
-                <template v-slot:item="{ props, item }">
-                  <VListItem v-bind="props" :prepend-avatar="baseUrl + item.raw.avatar_img"
-                    :subtitle="item.raw.last_name" :title="item.raw.first_name" />
-                </template>
-              </VAutocomplete>
-            </VCol>
-            <VCol cols="12" sm="6">
-              <VTextField v-model="newViatic.soliReason" :rules="[required]" label="Motivo de solicitud" />
-            </VCol>
-            <VCol cols="12" sm="12"> <!-- {{ proyectsList }} -->
-              <VAutocomplete v-model="newViatic.project" :rules="[requiredObject]" :items="proyectsList" item-value="id"
-                label="Selecciona un proyecto" item-title="cost_center_code" return-object>
-                <template v-slot:item="{ props, item }">
-                  <VListItem v-bind="props">
-                    <!-- <VListItemTitle>{{ item.raw.cost_center_code }}</VListItemTitle> -->
-                    <VListItemSubtitle class="mb-1 text-high-emphasis opacity-100">
-                      {{ item.raw.project_name }} - {{ item.raw.client_name }}
-                    </VListItemSubtitle>
-                    <VListItemSubtitle class="mb-1 text-high-emphasis opacity-100">
-                      Ubicación: {{ item.raw.location_name }}
-                    </VListItemSubtitle>
-                  </VListItem>
-                </template>
-              </VAutocomplete>
+  <VForm ref="formRef" lazy-validation>
+    <VCard>
+      <VCardTitle class="d-flex justify-space-between">
+        {{ isEdit ? 'Editar solicitud' : 'Nueva solicitud' }}
+        <VChip :color="repeatViatic ? 'error' : 'success'" label>
+          {{ newViatic.codeViatic }}
+        </VChip>
+        <!-- {{ repeatViatic ? '(Código disponible)' : '(Código repetido)' }} -->
+      </VCardTitle>
+      <VDivider />
+      <VCardText>
+        <VRow>
+          <VCol cols="12" sm="12" class="d-flex justify-center">
+            <VRadioGroup label="Tipo de viaje" v-model="newViatic.type" inline>
+              <VRadio label="Lima" value="LIMA" />
+              <VRadio label="Provincia" value="PROVINCIA" />
+            </VRadioGroup>
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VAutocomplete v-model="newViatic.userId" :rules="[required]" :items="userList" item-value="id"
+              item-title="first_name" label="Empleado" :disabled="isEmployee">
+              <template v-slot:item="{ props, item }">
+                <VListItem v-bind="props" :prepend-avatar="baseUrl + item.raw.avatar_img" :subtitle="item.raw.last_name"
+                  :title="item.raw.first_name" />
+              </template>
+            </VAutocomplete>
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VTextField v-model="newViatic.soliReason" :rules="[required]" label="Motivo de solicitud" />
+          </VCol>
+          <VCol cols="12" sm="12"> <!-- {{ proyectsList }} -->
+            <VAutocomplete v-model="newViatic.project" :rules="[requiredObject]" :items="proyectsList" item-value="id"
+              label="Selecciona un proyecto" item-title="cost_center_code" return-object>
+              <template v-slot:item="{ props, item }">
+                <VListItem v-bind="props">
+                  <!-- <VListItemTitle>{{ item.raw.cost_center_code }}</VListItemTitle> -->
+                  <VListItemSubtitle class="mb-1 text-high-emphasis opacity-100">
+                    {{ item.raw.project_name }} - {{ item.raw.client_name }}
+                  </VListItemSubtitle>
+                  <VListItemSubtitle class="mb-1 text-high-emphasis opacity-100">
+                    Ubicación: {{ item.raw.location_name }}
+                  </VListItemSubtitle>
+                </VListItem>
+              </template>
+            </VAutocomplete>
 
-              <VExpandTransition>
-                <VCard v-if="newViatic.project" class="mt-3 pa-3" variant="tonal">
-                  <div class="text-subtitle-1 font-weight-bold">
-                    {{ newViatic.project.project_name }} -
-                    {{ newViatic.project.cost_center_code }}
-                  </div>
+            <VExpandTransition>
+              <VCard v-if="newViatic.project" class="mt-3 pa-3" variant="tonal">
+                <div class="text-subtitle-1 font-weight-bold">
+                  {{ newViatic.project.project_name }} -
+                  {{ newViatic.project.cost_center_code }}
+                </div>
 
-                  <div class="text-body-2 mt-1">
-                    Cliente: {{ newViatic.project.client_name }}
-                  </div>
+                <div class="text-body-2 mt-1">
+                  Cliente: {{ newViatic.project.client_name }}
+                </div>
 
-                  <div class="text-body-2">
-                    Ubicación: {{ newViatic.project.location_name }}
-                  </div>
-                </VCard>
-              </VExpandTransition>
-            </VCol>
-            <VCol cols="12" sm="6">
-              <VDateInput v-model="newViatic.startMovdate" variant="outlined" @update:model-value="generateViaticCode"
-                label="Fecha inicio viaje" :rules="[required]" />
-            </VCol>
-            <VCol cols="12" sm="6">
-              <VDateInput v-model="newViatic.endMovdate" :rules="[required]" variant="outlined"
-                label="Fecha fin viaje" />
-            </VCol>
-            <VCol v-if="newViatic.type === 'PROVINCIA'" cols="12" sm="6">
-              <VDateInput v-model="newViatic.startProvDate" variant="outlined" label="Fecha llegada provincia"
-                :rules="[required]" />
-            </VCol>
-            <VCol v-if="newViatic.type === 'PROVINCIA'" cols="12" sm="6">
-              <VDateInput v-model="newViatic.endProvDate" :rules="[required]" variant="outlined"
-                label="Fecha salida provincia" />
-            </VCol>
-          </VRow>
-        </VCardText>
-        <VCardActions>
-          <!-- Acciones del formulario -->
-          <VSpacer />
-          <VBtn color="primary" @click="onSubmit">
-            {{ isEdit ? 'Guardar Cambios' : 'Agregar Viático' }}
-          </VBtn>
-          <VBtn text @click="$emit('close'); resetForm()">
-            Cancelar
-          </VBtn>
-        </VCardActions>
-      </VCard>
-    </VForm>
-  </div>
+                <div class="text-body-2">
+                  Ubicación: {{ newViatic.project.location_name }}
+                </div>
+              </VCard>
+            </VExpandTransition>
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VDateInput v-model="newViatic.startMovdate" variant="outlined" @update:model-value="generateViaticCode"
+              label="Fecha inicio viaje" :rules="[required]" />
+          </VCol>
+          <VCol cols="12" sm="6">
+            <VDateInput v-model="newViatic.endMovdate" :rules="[required]" variant="outlined" label="Fecha fin viaje" />
+          </VCol>
+          <VCol v-if="newViatic.type === 'PROVINCIA'" cols="12" sm="6">
+            <VDateInput v-model="newViatic.startProvDate" variant="outlined" label="Fecha llegada provincia"
+              :rules="[required]" />
+          </VCol>
+          <VCol v-if="newViatic.type === 'PROVINCIA'" cols="12" sm="6">
+            <VDateInput v-model="newViatic.endProvDate" :rules="[required]" variant="outlined"
+              label="Fecha salida provincia" />
+          </VCol>
+        </VRow>
+      </VCardText>
+      <VCardActions>
+        <!-- Acciones del formulario -->
+        <VSpacer />
+        <VBtn color="primary" @click="onSubmit">
+          {{ isEdit ? 'Guardar Cambios' : 'Agregar Viático' }}
+        </VBtn>
+        <VBtn text @click="$emit('close'); resetForm()">
+          Cancelar
+        </VBtn>
+      </VCardActions>
+    </VCard>
+  </VForm>
 </template>
