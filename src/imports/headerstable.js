@@ -163,11 +163,11 @@ export const headersConceptsList = [
 
 
 export const headersDeclarationsUser = [
-    { title: 'Viatico', key: 'viatic_code' },
+    { title: 'Viatico', key: 'code' },
     { title: 'Proyecto', key: 'project' },
-    { title: 'Cliente', key: 'client' },
+    { title: 'Fechas', key: 'date_data' },
     { title: 'Saldo', key: 'balance' },
-    { title: 'Declarado', key: 'declare_amount' },
+    { title: 'Declarado', key: 'declare' },
     { title: 'Estado', key: 'status' },
     { title: 'Acciones', key: 'actions' },
 ]
@@ -178,6 +178,7 @@ export const headersLiquidationsUser = [
     { title: 'FECHA', key: 'expense_date' },
     { title: 'DESCRIPCION', key: 'option_name' },
     { title: 'COSTO', key: 'amount' },
+    { title: 'ESTADO', key: 'active' },
     { title: 'ACCIONES', key: 'actions', align: 'end' },
 ]
 
@@ -187,6 +188,7 @@ export const headersMovilityUser = [
     { title: 'DESDE', key: 'travel_from' },
     { title: 'HASTA', key: 'travel_to' },
     { title: 'MONTO', key: 'amount' },
+    { title: 'ESTADO', key: 'active' },
     { title: 'ACCIONES', key: 'actions', align: 'end' },
 ]
 
@@ -194,15 +196,17 @@ export const headersDDJJAlimUser = [
     { title: 'FECHA', key: 'expense_date' },
     { title: 'DESCRIPCION', key: 'option_name' },
     { title: 'MONTO', key: 'amount' },
+    { title: 'ESTADO', key: 'active' },
     { title: 'ACCIONES', key: 'actions', align: 'end' },
 ]
 
 export const headersDDJJMovUser = [
     { title: 'FECHA', key: 'expense_date' },
-    { title: 'MOTIVO', key: 'option_name' },
+    { title: 'MOTIVO', key: 'option_data' },
     { title: 'DESDE', key: 'travel_from' },
     { title: 'HASTA', key: 'travel_to' },
     { title: 'MONTO', key: 'amount' },
+    { title: 'ESTADO', key: 'active' },
     { title: 'ACCIONES', key: 'actions', align: 'end' },
 ]
 

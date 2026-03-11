@@ -47,12 +47,15 @@ const hasRole = (allowedRoles) => {
     <VerticalNavLink v-if="hasRole(['admin'])"
       :item="{ title: 'Aprobacion de solicitudes', icon: 'ri-list-view', to: '/list-viaticos-adm' }" />
 
+    <VerticalNavLink v-if="hasRole(['admin'])"
+      :item="{ title: 'Aprobacion de declaraciones', icon: 'ri-file-list-line', to: '/list-declaration-adm' }" />
+
 
     <VerticalNavSectionTitle v-if="hasRole(['admin', 'tesoreria', 'accounting'])" :item="{
       heading: 'Vistas contables',
     }" />
     <VerticalNavLink v-if="hasRole(['admin', 'tesoreria', 'accounting'])"
-      :item="{ title: 'Viaticos aprobados', icon: 'ri-list-view', to: '/list-viaticos-aproved' }" />
+      :item="{ title: 'Asignar presupuesto y depositos', icon: 'ri-list-view', to: '/list-viaticos-aproved' }" />
 
     <!-- 👉 User Interface -->
     <VerticalNavSectionTitle v-if="hasRole(['admin', 'tesoreria'])" :item="{ heading: 'Administración del sistema' }" />

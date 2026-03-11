@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import api from '@/services/api'
+import BaseDatatable from '@/components/BaseDatatable.vue'
 import ButtonComponent from '@/components/buttonComponent.vue'
 import { headersBudgetViatics } from '@/imports/headerstable'
-import BaseDatatable from '@/components/BaseDatatable.vue'
+import api from '@/services/api'
+import { onMounted, ref } from 'vue'
 import AddBudget from './add.budget.vue'
 import ListDeposits from './list.deposits.vue'
 
@@ -87,7 +87,7 @@ onMounted(() => {
   <div>
     <VRow>
       <VCol cols="12">
-        <h1>Viáticos Aprobados</h1>
+        <h1>Asignar presupuestos y depósitos</h1>
         <p>Aquí se mostrarán los viáticos que han sido aprobados.</p>
       </VCol>
 

@@ -164,17 +164,21 @@ onMounted(() => {
           </template>
 
           <template #item.status="{ item }">
-            <VChip v-if="item.status === 'SOLICITED'" color="primary" label dark>
-              SOLICITADO
-            </VChip>
-            <VChip v-if="item.status === 'APROB_ADMIN'" color="success" label="" dark>
-              APROBADO
-            </VChip>
-            <VChip v-if="item.status === 'REFUSED'" color="error" label="" dark>
-              RECHAZADO
-            </VChip>
-            <VChip v-else-if="item.status === 'APROB_TESO'" :color="getBudgetStatus(item).color" label>
-              {{ getBudgetStatus(item).text }}
+            <VChip :color="{
+              'APROB_TESO': 'warning',
+              'APROB_DEC_ADM': 'success',
+              'APROB_ADMIN': 'system',
+              'SOLICITED': 'info',
+              'REFUSED': 'error',
+            }[item.status]" size="small" label>
+              {{ {
+                'APROB_TESO': 'Aprobado Tesorería',
+                'APROB_DEC_ADM': 'Declaración aprobada',
+                'APROB_ADMIN': 'Solicitud aprobada',
+                'SOLICITED': 'Solicitado',
+                'REFUSED': 'Rechazado',
+              }[item.status]
+              }}
             </VChip>
           </template>
 

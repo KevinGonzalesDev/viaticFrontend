@@ -1,6 +1,7 @@
 <script setup>
 import ButtonComponent from '@/components/buttonComponent.vue'
 import { useConfirm } from '@/composables/useConfirm'
+import { useSnackbar } from '@/composables/useSnackbar'
 import {
   groupDistrict,
   groupProvince,
@@ -18,7 +19,7 @@ import AddProvince from './add.province.vue'
 
 const confirm = useConfirm()
 
-
+const snackbar = useSnackbar()
 const ShowconceptList = ref(false)
 const addCostconfig = ref(false)
 
@@ -145,11 +146,11 @@ const desactivateDepartment = async (id, active) => {
   try {
     await api.put(`/locations/departments/desactivate/${id}`, { active: !active })
 
-    alert(`Departamento ${!active ? 'activado' : 'desactivado'} con exito`)
+    snackbar.open(`Departamento ${!active ? 'activado' : 'desactivado'} con exito`, 'success')
     await loadDepartments()
   } catch (err) {
     console.error(err)
-    alert('No se pudo actualizar el estado del departamento')
+    snackbar.open('No se pudo actualizar el estado del departamento', 'error')
   }
 }
 
@@ -157,11 +158,11 @@ const desactivateProvince = async (id, active) => {
   try {
     await api.put(`/locations/provinces/desactivate/${id}`, { active: !active })
 
-    alert(`Provincia ${!active ? 'activada' : 'desactivada'} con exito`)
+    snackbar.open(`Provincia ${!active ? 'activada' : 'desactivada'} con exito`, 'success')
     await loadProvinces()
   } catch (err) {
     console.error(err)
-    alert('No se pudo actualizar el estado de la provincia')
+    snackbar.open('No se pudo actualizar el estado de la provincia', 'error')
   }
 }
 
@@ -169,11 +170,11 @@ const desactivateDistrict = async (id, active) => {
   try {
     await api.put(`/locations/districts/desactivate/${id}`, { active: !active })
 
-    alert(`Distrito ${!active ? 'activado' : 'desactivado'} con exito`)
+    snackbar.open(`Distrito ${!active ? 'activado' : 'desactivado'} con exito`, 'success')
     await loadDistricts()
   } catch (err) {
     console.error(err)
-    alert('No se pudo actualizar el estado del distrito')
+    snackbar.open('No se pudo actualizar el estado del distrito', 'error')
   }
 }
 
@@ -181,11 +182,11 @@ const desactivateCost = async (id, active) => {
   try {
     await api.put(`/rates/desactivate/${id}`, { active: !active })
 
-    alert(`Costo ${!active ? 'activado' : 'desactivado'} con exito`)
+    snackbar.open(`Costo ${!active ? 'activado' : 'desactivado'} con exito`, 'success')
     await listViaticrates()
   } catch (err) {
     console.error(err)
-    alert('No se pudo actualizar el estado del costo')
+    snackbar.open('No se pudo actualizar el estado del costo', 'error')
   }
 }
 

@@ -17,9 +17,10 @@ export const routes = [
 
       // gestion del sistema
       { path: 'list-users', component: () => import('@/pages/list-users.vue'), meta: { roles: ['admin'] } },
+      { path: 'list-roles', component: () => import('@/pages/list-roles.vue'), meta: { roles: ['admin'] } },
       { path: 'add-user', component: () => import('@/pages/add-user.vue'), meta: { roles: ['admin'] } },
       { path: 'list-viaticos-aproved', component: () => import('@/pages/list-aproved-viatics.vue'), meta: { roles: ['admin', 'tesoreria', 'accounting'] } },
-      { path: 'list-roles', component: () => import('@/pages/list-roles.vue'), meta: { roles: ['admin'] } },
+      { path: 'list-declaration-adm', component: () => import('@/pages/list.admDeclaration.vue'), meta: { roles: ['admin'] } },
 
       // vistas contables
       { path: 'list-viaticos-adm', component: () => import('@/pages/list-adm-viatics.vue'), meta: { roles: ['admin', 'tesoreria', 'accounting'] } },

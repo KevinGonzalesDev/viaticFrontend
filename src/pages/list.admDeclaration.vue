@@ -5,10 +5,9 @@ import { headersDeclarationsUser } from '@/imports/headerstable'
 import api from '@/services/api'
 import { onMounted, ref } from 'vue'
 import { VDateInput } from 'vuetify/labs/VDateInput'
-import ViewDeclare from './view.declare.vue'
+import ViewAdmDeclare from './view.declareAdm.vue'
 
 const userDeclarationsList = ref([])
-const user = JSON.parse(localStorage.getItem('user')) || {}
 
 // variables de estado para visualizacion de detallado de viatico
 const showDetailForm = ref(false)
@@ -20,6 +19,9 @@ const viewUserDeclarationFunc = (declaration) => {
   showDetailForm.value = true
 }
 
+const userList = ref([])
+const baseUrl = import.meta.env.VITE_APP_URL
+
 const closeForm = () => {
   showDetailForm.value = false
 }
@@ -28,7 +30,7 @@ const filters = ref({
   startDate: null,
   endDate: null,
   status: null,
-  userId: user.id
+  userId: null
 })
 
 const statusList = [
@@ -36,7 +38,7 @@ const statusList = [
   { text: 'Declaracion aprobada', value: 'APROB_DEC_ADM' },
 ]
 
-const loadUserDeclarations = async () => {
+const loadAdmDeclarations = async () => {
   try {
 
     const params = {
@@ -46,15 +48,27 @@ const loadUserDeclarations = async () => {
       userId: filters.value.userId
     }
 
-    const response = await api.get(`/decviatics/user/viatics`, { params })
-
+    const response = await api.get('/decviatics/admin/viatics', { params })
     userDeclarationsList.value = response.data.data
   } catch (error) {
-    console.error('Error loading user declarations:', error)
+    console.error('Error fetching viatics:', error)
   }
 }
 
-watch(filters, loadUserDeclarations, { deep: true })
+const listEmployees = async () => {
+  try {
+    const { data } = await api.get('/employee')
+
+    userList.value = data.data
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo cargar los empleados')
+  }
+}
+
+
+watch(filters, loadAdmDeclarations, { deep: true })
+
 
 const generatePDF = (id) => {
   window.open(`${import.meta.env.VITE_API_URL}/decviatics/pdf/${id}`, '_blank')
@@ -73,7 +87,8 @@ const generateDDJJPDF = (id) => {
 }
 
 onMounted(() => {
-  loadUserDeclarations()
+  loadAdmDeclarations()
+  listEmployees()
 })
 </script>
 
@@ -81,25 +96,35 @@ onMounted(() => {
   <div>
     <template v-if="!showDetailForm">
       <VRow dense>
-        <VCol cols="12" md="12">
-          <h2>Declaraciones de Usuario</h2>
+        <VCol cols="12">
+          <h2>Aprobación de declaraciones de todos los usuarios</h2>
           <p>Aquí se mostrarán las declaraciones realizadas por los usuarios.</p>
         </VCol>
-        <VCol cols="12" md="4">
+
+        <VCol cols="12" md="3">
           <VDateInput density="compact" v-model="filters.startDate" @click:clear="filters.startDate = null"
             label="Fecha inicio" clearable />
         </VCol>
 
-        <VCol cols="12" md="4">
+        <VCol cols="12" md="3">
           <VDateInput density="compact" v-model="filters.endDate" @click:clear="filters.endDate = null"
             label="Fecha fin" clearable />
         </VCol>
 
-        <VCol cols="12" md="4">
+        <VCol cols="12" md="3">
           <VSelect density="compact" v-model="filters.status" :items="statusList" item-title="text" item-value="value"
-            label="Estado" clearable />
+            label="Estado" />
         </VCol>
 
+        <VCol cols="12" md="3">
+          <VAutocomplete v-model="filters.userId" :items="userList" item-value="id" item-title="first_name"
+            label="Empleado" multiple clearable density="compact">
+            <template v-slot:item="{ props, item }">
+              <VListItem v-bind="props" :prepend-avatar="baseUrl + item.raw.avatar_img" :subtitle="item.raw.last_name"
+                :title="item.raw.first_name" />
+            </template>
+          </VAutocomplete>
+        </VCol>
 
         <VCol cols="12">
           <BaseDatatable :headers="headersDeclarationsUser" :items="userDeclarationsList">
@@ -111,7 +136,6 @@ onMounted(() => {
                 {{ item.viatic_new_code }}
               </VChip>
             </template>
-
             <template #item.project="{ item }">
               <div class="font-weight-medium">
                 {{ item.proyect_name }} - {{ item.project_code }}
@@ -139,7 +163,12 @@ onMounted(() => {
               </div>
             </template>
 
-
+            <template #item.client="{ item }">
+              <VChip outlined size="small" label>
+                {{ item.client_name }}
+              </VChip>
+              {{ item.location_name }}
+            </template>
 
             <template #item.balance="{ item }">
               <VChip size="small" label class="mb-1">
@@ -161,20 +190,18 @@ onMounted(() => {
               </VChip>
             </template>
 
+
+
             <template #item.status="{ item }">
               <VChip :color="{
                 'APROB_TESO': 'warning',
                 'APROB_DEC_ADM': 'success',
-                'APROB_ADMIN': 'success',
-                'SOLICITED': 'info',
-                'REFUSED': 'error',
+                'rejected': 'error'
               }[item.status]" size="small" label>
                 {{ {
                   'APROB_TESO': 'Aprobado Tesorería',
                   'APROB_DEC_ADM': 'Declaración aprobada',
-                  'APROB_ADMIN': 'Solicitud aprobada',
-                  'SOLICITED': 'Solicitado',
-                  'REFUSED': 'Rechazado',
+                  'rejected': 'Rechazado'
                 }[item.status]
                 }}
               </VChip>
@@ -182,8 +209,8 @@ onMounted(() => {
             </template>
 
             <template #item.actions="{ item }">
-              <ButtonComponent icon="ri-hand-coin-line" tooltip="Declarar gasto" @click="viewUserDeclarationFunc(item)"
-                :disabled="item.status === 'APROB_DEC_ADM'" />
+              <ButtonComponent icon="ri-hand-coin-line" tooltip="Revisar declaraciones"
+                @click="viewUserDeclarationFunc(item)" />
 
               <VMenu v-if="item.status === 'APROB_DEC_ADM'">
                 <template v-slot:activator="{ props }">
@@ -226,7 +253,7 @@ onMounted(() => {
       </VRow>
     </template>
     <template v-else>
-      <ViewDeclare :viatic="selectedDeclarationId" @close="closeForm" />
+      <ViewAdmDeclare :viatic="selectedDeclarationId" @close="closeForm" />
     </template>
   </div>
 </template>

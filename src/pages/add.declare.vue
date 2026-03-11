@@ -19,10 +19,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'close'])
-import { ref, computed, onMounted, watch } from 'vue'
-import { VDateInput } from 'vuetify/labs/VDateInput'
-import api from '@/services/api'
 import { useSnackbar } from '@/composables/useSnackbar'
+import api from '@/services/api'
+import { computed, onMounted, ref, watch } from 'vue'
+import { VDateInput } from 'vuetify/labs/VDateInput'
 
 
 const isEdit = computed(() => props.mode === 'edit')
@@ -42,10 +42,12 @@ const Formdeclare = ref({
   amount: '',
   category: '',
   paymentMethod: 'EFECTIVO',
+  movilityMethod: null,
 })
 
 const typesDocument = ref([''])
 const paymentMethods = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA']
+const mobilityMethods = ['TAXI', 'MOTOTAXI', 'COLECTIVO', 'BUS']
 const listOptions = ref([])
 const details = computed(() => props.details || {})
 
@@ -109,6 +111,11 @@ const isMovilidad = computed(() => {
     Formdeclare.value.optionObject?.category === 'MOVILIDAD'
 })
 
+const isMovilidadddj = computed(() => {
+  return Formdeclare.value.documentType === 'DECLARACION_JURADA' &&
+    Formdeclare.value.optionObject?.category === 'MOVILIDAD'
+})
+
 const handleDocumentTypeChange = async (newType) => {
   Formdeclare.value.optionObject = null
   await getOpcionswithType(newType)
@@ -153,6 +160,7 @@ onMounted(async () => {
       amount: props.item.amount,
       category: props.item.category,
       paymentMethod: props.item.payment_method,
+      movilityMethod: props.item.movility_methods,
       optionObject: props.item.optionobject,
     })
 
@@ -218,6 +226,10 @@ onMounted(async () => {
           </VCol>
           <VCol cols="12" sm="6">
             <VTextField v-model="Formdeclare.amount" label="Monto" type="number" outlined dense />
+          </VCol>
+          <VCol v-if="isMovilidadddj" cols="12" sm="6">
+            <VSelect v-model="Formdeclare.movilityMethod" label="Método de movilidad" :items="mobilityMethods" outlined
+              dense />
           </VCol>
           <VCol cols="12" sm="6">
             <VSelect v-model="Formdeclare.paymentMethod" label="Método de Pago" :items="paymentMethods" outlined

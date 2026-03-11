@@ -1,9 +1,7 @@
 <script setup>
-import { ref, onMounted, watch, inject } from 'vue'
 import api from '@/services/api'
+import { inject, onMounted, ref, watch } from 'vue'
 import { VDateInput } from 'vuetify/labs/VDateInput'
-import { useSnackbar } from '@/composables/useSnackbar.js'
-import { required, requiredObject } from '@/imports/rulesImport.js'
 
 const props = defineProps({
   deposit: {
@@ -186,7 +184,6 @@ onMounted(() => {
       </VCardTitle>
       <VCardText>
         <VRow>
-          {{ depositForm }} --- IGNORE ---
           <VCol cols="12" md="6">
             <VAutocomplete v-model="depositForm.originAccount" item-title="account_number" item-id="id"
               :items="originAccountList" label="Cuenta Origen" type="text" return-object />

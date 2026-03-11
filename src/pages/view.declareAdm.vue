@@ -10,7 +10,6 @@ const emit = defineEmits(['loaded', 'close'])
 
 import BaseDatatable from '@/components/BaseDatatable.vue'
 import ButtonComponent from '@/components/buttonComponent.vue'
-import ConfirmDialog from '@/components/modalConfirmation.vue'
 import { useSnackbar } from '@/composables/useSnackbar.js'
 import {
   headersDDJJAlimUser,
@@ -20,7 +19,6 @@ import {
 } from '@/imports/headerstable'
 import api from '@/services/api'
 import { onMounted, ref } from 'vue'
-import AddDeclare from './add.declare.vue'
 
 const snackbar = useSnackbar()
 const viaticDetails = ref(null)
@@ -45,19 +43,14 @@ const formDate = ref({
 })
 
 
+const viaticStatus = ref(null)
 
-const addDeclareFunc = () => {
-  showDeclareModal.value = true
-  modeDeclareModal.value = 'create'
-  selectedViatic.value = viaticDetails.value
-}
+const itemsStatus = [
+  { text: 'Aprobado Tesorería', value: 'APROB_TESO' },
+  { text: 'Declaracion aprobada', value: 'APROB_DEC_ADM' },
+]
 
-const editDeclareFunc = (item) => {
-  showDeclareModal.value = true
-  modeDeclareModal.value = 'edit'
-  selectedViatic.value = viaticDetails.value
-  selectedDeclareViatic.value = item
-}
+
 
 const loadViaticDetails = async () => {
   try {
@@ -136,31 +129,35 @@ const totalGeneral = computed(() => {
   )
 })
 
-
-
-// functioons de eliminacion de declaracion
-
-const openDeleteDeclareConfirm = (declareId) => {
-  declareIdToDelete.value = declareId
-  showConfirm.value = true
-}
-
-
-const deleteDeclareFunc = async () => {
+const desactivateDeclaration = async (id, active) => {
   try {
-    await api.delete('/decviatics/expenses/' + declareIdToDelete.value)
-    alert('Gasto eliminado correctamente')
-    loadViaticItems()
+    await api.put(`/decviatics/admin/desactivate/${id}`, { active: !active })
+
+    snackbar.open(`Gasto ${!active ? 'activado' : 'desactivado'} con exito`, 'success')
+    await loadViaticItems()
   } catch (err) {
     console.error(err)
-    alert('No se pudo eliminar el gasto')
+    snackbar.open('No se pudo actualizar el estado del gasto', 'error')
+  }
+}
+
+const updateViaticStatus = async () => {
+  try {
+    await api.put(`/decviatics/status/${props.viatic}`, { status: viaticStatus.value })
+
+    snackbar.open('Estado actualizado con exito', 'success')
+    await loadViaticDetails()
+  } catch (err) {
+    console.error(err)
+    snackbar.open('No se pudo actualizar el estado del viaje', 'error')
   }
 }
 
 
-onMounted(() => {
-  loadViaticDetails()
-  loadViaticItems()
+onMounted(async () => {
+  await loadViaticDetails()
+  await loadViaticItems()
+  viaticStatus.value = viaticDetails.value?.viatic_status || null
 })
 </script>
 
@@ -173,58 +170,82 @@ onMounted(() => {
         </VBtn>
       </VCol>
       <VCol cols="12">
-        <span class="text-h5 d-flex justify-center text-high-emphasis">
+        <div class="text-h5 text-center font-weight-medium">
           Detalles de la Declaración
-        </span>
+        </div>
       </VCol>
-      <VCol cols="12">
-        <VCard>
-          <VCardTitle class="text-center">Información del viaje</VCardTitle>
 
-          <VCardText class="text-body-2">
-            <VRow>
-              <VCol cols="12" md="8">
-                <VCard variant="outlined">
-                  <VCardText class="text-body-2">
+      <!-- INFORMACION GENERAL -->
+      <VCol cols="12" md="12">
+        <VRow>
 
-                    <div><strong>N° VIAJE:</strong> {{ viaticDetails?.viatic_code }}</div>
-                    <div><strong>PROYECTO:</strong> {{ viaticDetails?.cost_center }}</div>
-                    <div><strong>TRABAJADOR:</strong> {{ viaticDetails?.user_name }} {{ viaticDetails?.user_lastname
-                    }}
-                    </div>
-                    <div><strong>DNI:</strong> {{ viaticDetails?.user_dni }}</div>
-                    <div><strong>AREA:</strong> {{ viaticDetails?.user_area }}</div>
-                    <div><strong>MOTIVO:</strong> {{ viaticDetails?.proyect_name }}</div>
-                    <div><strong>LUGAR:</strong> {{ viaticDetails?.location_name }}</div>
-                  </VCardText>
-                </VCard>
-              </VCol>
-              <VCol cols="12" md="4">
+          <!-- INFORMACION DEL VIAJE -->
+          <VCol cols="12">
+            <VCard>
+              <VCardTitle class="text-center">Información del viaje</VCardTitle>
+
+              <VCardText class="text-body-2">
                 <VRow>
-                  <VCol cols="12">
-                    <div class="d-flex flex-column ga-1 ">
-                      <VChip size="small" color="secondary" label>
-                        Inicio :{{ new Date(viaticDetails?.viatic_start).toLocaleDateString() }}
-                      </VChip>
-                      <VChip size="small" color="secondary" label>
-                        Fin : {{ new Date(viaticDetails?.viatic_end).toLocaleDateString() }}
-                      </VChip>
-                      <VChip v-if="viaticDetails?.start_prov_date" size="small" color="info" label>
-                        LLeg Prov :{{ new Date(viaticDetails?.start_prov_date).toLocaleDateString() }}
-                      </VChip>
-                      <VChip v-if="viaticDetails?.end_prov_date" size="small" color="info" label>
-                        Sal Prov :{{ new Date(viaticDetails?.end_prov_date).toLocaleDateString() }}
-                      </VChip>
-                    </div>
+                  <VCol cols="12" md="8">
+                    <VCard variant="outlined">
+                      <VCardText class="text-body-2">
+
+                        <div><strong>N° VIAJE:</strong> {{ viaticDetails?.viatic_code }}</div>
+                        <div><strong>PROYECTO:</strong> {{ viaticDetails?.cost_center }}</div>
+                        <div><strong>TRABAJADOR:</strong> {{ viaticDetails?.user_name }} {{ viaticDetails?.user_lastname
+                        }}
+                        </div>
+                        <div><strong>DNI:</strong> {{ viaticDetails?.user_dni }}</div>
+                        <div><strong>AREA:</strong> {{ viaticDetails?.user_area }}</div>
+                        <div><strong>MOTIVO:</strong> {{ viaticDetails?.proyect_name }}</div>
+                        <div><strong>LUGAR:</strong> {{ viaticDetails?.location_name }}</div>
+                      </VCardText>
+                    </VCard>
+                  </VCol>
+                  <VCol cols="12" md="4">
+                    <VRow>
+                      <VCol cols="12">
+                        <div class="d-flex flex-column ga-1 ">
+                          <VChip size="small" color="secondary" label>
+                            Inicio :{{ new Date(viaticDetails?.viatic_start).toLocaleDateString() }}
+                          </VChip>
+                          <VChip size="small" color="secondary" label>
+                            Fin : {{ new Date(viaticDetails?.viatic_end).toLocaleDateString() }}
+                          </VChip>
+                          <VChip v-if="viaticDetails?.start_prov_date" size="small" color="info" label>
+                            LLeg Prov :{{ new Date(viaticDetails?.start_prov_date).toLocaleDateString() }}
+                          </VChip>
+                          <VChip v-if="viaticDetails?.end_prov_date" size="small" color="info" label>
+                            Sal Prov :{{ new Date(viaticDetails?.end_prov_date).toLocaleDateString() }}
+                          </VChip>
+                        </div>
+                      </VCol>
+                      <VCol cols="12" class="d-flex">
+                        <VSelect density="compact" v-model="viaticStatus" :items="itemsStatus" item-title="text"
+                          item-value="value" label="Estado" />
+
+                        <ButtonComponent icon="ri-save-line" tooltip="Guardar estado" color="primary"
+                          @click="updateViaticStatus" />
+                      </VCol>
+                    </VRow>
                   </VCol>
                 </VRow>
-              </VCol>
-            </VRow>
-          </VCardText>
-        </VCard>
+
+              </VCardText>
+
+            </VCard>
+          </VCol>
+
+
+
+
+        </VRow>
       </VCol>
 
+
       <!-- CAMBIO DE ESTADO -->
+
+
 
       <!-- RESUMENES -->
       <VCol cols="12">
@@ -246,6 +267,7 @@ onMounted(() => {
                   <strong>Total:</strong> S/ {{ totalGeneral }}
                 </div>
               </VCardText>
+
             </VCard>
           </VCol>
 
@@ -272,11 +294,6 @@ onMounted(() => {
         </VRow>
       </VCol>
 
-      <VCol cols="12" class="d-flex justify-end">
-        <VBtn title="" @click="addDeclareFunc">
-          Agregar gasto
-        </VBtn>
-      </VCol>
       <VCol cols="12">
         <VCard>
           <VCardText>
@@ -290,7 +307,7 @@ onMounted(() => {
               </template>
 
               <template #item.amount="{ item }">
-                $ {{ item.amount }}
+                S/ {{ item.amount }}
               </template>
 
               <template #item.active="{ item }">
@@ -300,11 +317,11 @@ onMounted(() => {
               </template>
 
               <template #item.actions="{ item }">
-                <ButtonComponent icon="ri-edit-line" tooltip="Editar gasto" color="primary"
-                  @click="editDeclareFunc(item)" />
 
-                <ButtonComponent icon="ri-delete-bin-6-line" tooltip="Eliminar gasto" color="primary"
-                  @click="openDeleteDeclareConfirm(item.id)" />
+                <ButtonComponent :icon="item.is_active ? 'ri-toggle-fill' : 'ri-toggle-line'"
+                  :tooltip="item.is_active ? 'Declaracion aprobada' : 'Declaracion desactivada'"
+                  @click="desactivateDeclaration(item.id, item.is_active)" />
+
               </template>
             </BaseDatatable>
           </VCardText>
@@ -326,9 +343,8 @@ onMounted(() => {
               </template>
 
               <template #item.amount="{ item }">
-                $ {{ item.amount }}
+                S/ {{ item.amount }}
               </template>
-
               <template #item.active="{ item }">
                 <VChip :color="item.is_active ? 'primary' : 'grey'">
                   {{ item.is_active ? 'Activo' : 'Inactivo' }}
@@ -336,10 +352,11 @@ onMounted(() => {
               </template>
 
               <template #item.actions="{ item }">
-                <ButtonComponent icon="ri-edit-line" tooltip="Editar gasto" color="primary"
-                  @click="editDeclareFunc(item)" />
-                <ButtonComponent icon="ri-delete-bin-6-line" tooltip="Eliminar gasto" color="primary"
-                  @click="openDeleteDeclareConfirm(item.id)" />
+
+                <ButtonComponent :icon="item.is_active ? 'ri-toggle-fill' : 'ri-toggle-line'"
+                  :tooltip="item.is_active ? 'Declaracion aprobada' : 'Declaracion desactivada'"
+                  @click="desactivateDeclaration(item.id, item.is_active)" />
+
               </template>
             </BaseDatatable>
           </VCardText>
@@ -362,24 +379,20 @@ onMounted(() => {
                 {{ item.expense_date ? new Date(item.expense_date).toLocaleDateString() : '' }}
               </template>
               <template #item.amount="{ item }">
-                $ {{ item.amount }}
+                S/ {{ item.amount }}
               </template>
               <template #item.active="{ item }">
                 <VChip :color="item.is_active ? 'primary' : 'grey'">
                   {{ item.is_active ? 'Activo' : 'Inactivo' }}
                 </VChip>
               </template>
-
-
               <template #item.actions="{ item }">
-                <ButtonComponent icon="ri-edit-line" tooltip="Editar gasto" color="primary"
-                  @click="editDeclareFunc(item)" />
-                <ButtonComponent icon="ri-delete-bin-6-line" tooltip="Eliminar gasto" color="primary"
-                  @click="openDeleteDeclareConfirm(item.id)" />
+                <ButtonComponent :icon="item.is_active ? 'ri-toggle-fill' : 'ri-toggle-line'"
+                  :tooltip="item.is_active ? 'Declaracion aprobada' : 'Declaracion desactivada'"
+                  @click="desactivateDeclaration(item.id, item.is_active)" />
               </template>
             </BaseDatatable>
 
-            {{ viaticItemsMovDeclaration }}
             <BaseDatatable tabletitle="MOVILIDAD" :headers="headersDDJJMovUser" :items="viaticItemsMovDeclaration">
               <!-- Aquí puedes agregar los detalles adicionales de la declaración -->
               <template #item.expense_date="{ item }">
@@ -402,26 +415,18 @@ onMounted(() => {
                   {{ item.is_active ? 'Activo' : 'Inactivo' }}
                 </VChip>
               </template>
-              <template #item.actions="{ item }">
-                <ButtonComponent icon="ri-edit-line" tooltip="Editar gasto" color="primary"
-                  @click="editDeclareFunc(item)" />
 
-                <ButtonComponent icon="ri-delete-bin-6-line" tooltip="Eliminar gasto" color="primary"
-                  @click="openDeleteDeclareConfirm(item.id)" />
+              <template #item.actions="{ item }">
+
+                <ButtonComponent :icon="item.is_active ? 'ri-toggle-fill' : 'ri-toggle-line'"
+                  :tooltip="item.is_active ? 'Declaracion aprobada' : 'Declaracion desactivada'"
+                  @click="desactivateDeclaration(item.id, item.is_active)" />
+
               </template>
             </BaseDatatable>
           </VCardText>
         </VCard>
       </VCol>
     </VRow>
-
-    <VDialog v-model="showDeclareModal" max-width="800px">
-      <AddDeclare :mode="modeDeclareModal" :viatic="selectedViatic" :item="selectedDeclareViatic"
-        @saved="loadViaticItems" :details="viaticDetails" @close="showDeclareModal = false" />
-    </VDialog>
-
-    <ConfirmDialog v-model="showConfirm" title="Eliminar declaración"
-      message="Esta acción no se puede deshacer. ¿Deseas continuar?" confirm-text="Sí, eliminar" cancel-text="No"
-      @confirm="deleteDeclareFunc" />
   </div>
 </template>
