@@ -77,7 +77,6 @@ const addDepositViatic = async () => {
     } else {
       // Crear provincia
       await api.post('/decviatics/expenses/', payload)
-      console.log('Gasto creado:', payload)
       snackbar.value = { show: true, message: 'Gasto creado exitosamente', color: 'success' }
     }
     emit('saved')

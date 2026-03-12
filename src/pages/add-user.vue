@@ -106,7 +106,6 @@ const guardarEmpleado = async () => {
       form.append('avatar', accountDataLocal.value.avatarFile)
     }
 
-    console.log(accountDataLocal.value, 'formData:', form);
 
 
     const res = isEdit

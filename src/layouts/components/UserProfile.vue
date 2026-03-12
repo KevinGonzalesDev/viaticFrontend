@@ -11,7 +11,6 @@ onMounted(() => {
   if (storedUser) {
     user.value = JSON.parse(storedUser)
   }
-  console.log('User Profile:', user.value)
 })
 
 const logout = () => {
