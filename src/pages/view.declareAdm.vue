@@ -26,6 +26,7 @@ const viaticItemsLiquidation = ref([])
 const viaticItemsMovility = ref([])
 const viaticItemsAliDeclaration = ref([])
 const viaticItemsMovDeclaration = ref([])
+const listLimits = ref([])
 
 const showDeclareModal = ref(false)
 const modeDeclareModal = ref('create') // 'create' o 'edit'
@@ -50,6 +51,28 @@ const itemsStatus = [
   { text: 'Declaracion aprobada', value: 'APROB_DEC_ADM' },
 ]
 
+const ImageDialog = ref(false)
+const selectedImage = ref(null)
+
+const viewDocument = (item) => {
+  if (!item.document_url) {
+    snackbar.open('No hay documento disponible', 'error')
+    return
+  }
+
+  const url = import.meta.env.VITE_APP_URL + item.document_url
+  window.open(url, '_blank')
+}
+
+const viewImage = (item) => {
+  if (!item.image_url) {
+    snackbar.open('No hay imagen disponible', 'error')
+    return
+  }
+
+  selectedImage.value = import.meta.env.VITE_APP_URL + item.image_url
+  ImageDialog.value = true
+}
 
 
 const loadViaticDetails = async () => {
@@ -63,18 +86,95 @@ const loadViaticDetails = async () => {
   }
 }
 
+const loadLimitDistric = async () => {
+  try {
+    const { data } = await api.get(`/decviatics/configurations/limits/district/${viaticDetails.value.district_id}`)
+
+    listLimits.value = data.data
+
+  } catch (error) {
+    console.error('Error loading limit district:', error)
+  }
+}
+
 const loadViaticItems = async () => {
   try {
-    const { data } = await api.get(`/decviatics/items/${props.viatic}`)
 
-    viaticItemsLiquidation.value = data.data.filter(item => item.document_type === 'LIQUIDACION')
-    viaticItemsMovility.value = data.data.filter(item => item.document_type === 'MOVILIDAD')
-    viaticItemsAliDeclaration.value = data.data.filter(item => item.document_type === 'DECLARACION_JURADA' && item.optionobject.category === 'ALIMENTACION')
-    viaticItemsMovDeclaration.value = data.data.filter(item => item.document_type === 'DECLARACION_JURADA' && item.optionobject.category === 'MOVILIDAD')
+    const { data } = await api.get(`/decviatics/items/${props.viatic}`)
+    const items = data.data
+
+    const dailyTotals = calculateDailyLimits(items)
+
+
+    const limitsMap = Object.fromEntries(
+      listLimits.value.map(l => [l.category, Number(l.amount)])
+    )
+
+    // console.log(limitsMap);
+
+    items.forEach(item => {
+
+      const date = item.expense_real_date.slice(0, 10)
+      const category = item.optionobject?.category
+
+      const total = dailyTotals?.[date]?.[category] || 0
+      const limit = limitsMap[category]
+
+      item.limitExceeded = limit && total > limit
+
+      const expenseDate = new Date(item.expense_real_date).setHours(0, 0, 0, 0)
+      const startDate = new Date(viaticDetails.value.viatic_start).setHours(0, 0, 0, 0)
+      const endDate = new Date(viaticDetails.value.viatic_end).setHours(0, 0, 0, 0)
+
+
+
+      item.limitDateExceeded = expenseDate < startDate || expenseDate > endDate
+
+    })
+
+    viaticItemsLiquidation.value = items.filter(i => i.document_type === 'LIQUIDACION')
+    viaticItemsMovility.value = items.filter(i => i.document_type === 'MOVILIDAD')
+
+    viaticItemsAliDeclaration.value =
+      items.filter(i =>
+        i.document_type === 'DECLARACION_JURADA' &&
+        i.optionobject.category === 'ALIMENTACION'
+      )
+
+    viaticItemsMovDeclaration.value =
+      items.filter(i =>
+        i.document_type === 'DECLARACION_JURADA' &&
+        i.optionobject.category === 'MOVILIDAD'
+      )
 
   } catch (error) {
     console.error('Error loading viatic items:', error)
   }
+}
+
+const calculateDailyLimits = (items) => {
+
+  const totals = {}
+
+
+
+  items.forEach(item => {
+
+    if (!item.is_active) return
+
+    const date = item.expense_real_date.slice(0, 10)
+    const category = item.optionobject?.category
+
+    if (!category) return
+
+    if (!totals[date]) totals[date] = {}
+    if (!totals[date][category]) totals[date][category] = 0
+
+    totals[date][category] += Number(item.amount)
+
+  })
+
+  return totals
 }
 
 const totalLiquidation = computed(() => {
@@ -156,6 +256,7 @@ const updateViaticStatus = async () => {
 
 onMounted(async () => {
   await loadViaticDetails()
+  await loadLimitDistric()
   await loadViaticItems()
   viaticStatus.value = viaticDetails.value?.viatic_status || null
 })
@@ -193,7 +294,7 @@ onMounted(async () => {
                         <div><strong>N° VIAJE:</strong> {{ viaticDetails?.viatic_code }}</div>
                         <div><strong>PROYECTO:</strong> {{ viaticDetails?.cost_center }}</div>
                         <div><strong>TRABAJADOR:</strong> {{ viaticDetails?.user_name }} {{ viaticDetails?.user_lastname
-                        }}
+                          }}
                         </div>
                         <div><strong>DNI:</strong> {{ viaticDetails?.user_dni }}</div>
                         <div><strong>AREA:</strong> {{ viaticDetails?.user_area }}</div>
@@ -303,11 +404,15 @@ onMounted(async () => {
                 {{ item.optionobject ? item.optionobject.label : '' }}
               </template>
               <template #item.expense_date="{ item }">
-                {{ item.expense_date ? new Date(item.expense_date).toLocaleDateString() : '' }}
+                <VChip size="x-small" :color="item.limitDateExceeded ? 'error' : ''">
+                  {{ item.expense_real_date ? new Date(item.expense_real_date).toLocaleDateString() : '' }}
+                </VChip>
               </template>
 
               <template #item.amount="{ item }">
-                S/ {{ item.amount }}
+                <VChip size="x-small" :color="item.limitExceeded ? 'error' : ''">
+                  S/ {{ item.amount }}
+                </VChip>
               </template>
 
               <template #item.active="{ item }">
@@ -317,6 +422,12 @@ onMounted(async () => {
               </template>
 
               <template #item.actions="{ item }">
+
+                <ButtonComponent icon="ri-file-pdf-line" tooltip="Ver factura"
+                  :color="item.document_url ? 'primary' : 'grey'" @click="viewDocument(item)" />
+
+                <ButtonComponent icon="ri-image-line" tooltip="Ver comprobante"
+                  :color="item.image_url ? 'primary' : 'grey'" @click="viewImage(item)" />
 
                 <ButtonComponent :icon="item.is_active ? 'ri-toggle-fill' : 'ri-toggle-line'"
                   :tooltip="item.is_active ? 'Declaracion aprobada' : 'Declaracion desactivada'"
@@ -339,11 +450,15 @@ onMounted(async () => {
               </template>
 
               <template #item.expense_date="{ item }">
-                {{ item.expense_date ? new Date(item.expense_date).toLocaleDateString() : '' }}
+                <VChip size="x-small" :color="item.limitDateExceeded ? 'error' : ''">
+                  {{ item.expense_real_date ? new Date(item.expense_real_date).toLocaleDateString() : '' }}
+                </VChip>
               </template>
 
               <template #item.amount="{ item }">
-                S/ {{ item.amount }}
+                <VChip size="x-small" :color="item.limitExceeded ? 'error' : ''">
+                  S/ {{ item.amount }}
+                </VChip>
               </template>
               <template #item.active="{ item }">
                 <VChip :color="item.is_active ? 'primary' : 'grey'">
@@ -352,6 +467,12 @@ onMounted(async () => {
               </template>
 
               <template #item.actions="{ item }">
+
+                <ButtonComponent icon="ri-file-pdf-line" tooltip="Ver factura"
+                  :color="item.document_url ? 'primary' : 'grey'" @click="viewDocument(item)" />
+
+                <ButtonComponent icon="ri-image-line" tooltip="Ver comprobante"
+                  :color="item.image_url ? 'primary' : 'grey'" @click="viewImage(item)" />
 
                 <ButtonComponent :icon="item.is_active ? 'ri-toggle-fill' : 'ri-toggle-line'"
                   :tooltip="item.is_active ? 'Declaracion aprobada' : 'Declaracion desactivada'"
@@ -376,10 +497,14 @@ onMounted(async () => {
               </template>
 
               <template #item.expense_date="{ item }">
-                {{ item.expense_date ? new Date(item.expense_date).toLocaleDateString() : '' }}
+                <VChip size="x-small" :color="item.limitDateExceeded ? 'error' : ''">
+                  {{ item.expense_real_date ? new Date(item.expense_real_date).toLocaleDateString() : '' }}
+                </VChip>
               </template>
               <template #item.amount="{ item }">
-                S/ {{ item.amount }}
+                <VChip size="x-small" :color="item.limitExceeded ? 'error' : ''">
+                  S/ {{ item.amount }}
+                </VChip>
               </template>
               <template #item.active="{ item }">
                 <VChip :color="item.is_active ? 'primary' : 'grey'">
@@ -387,6 +512,13 @@ onMounted(async () => {
                 </VChip>
               </template>
               <template #item.actions="{ item }">
+
+                <ButtonComponent icon="ri-file-pdf-line" tooltip="Ver factura"
+                  :color="item.document_url ? 'primary' : 'grey'" @click="viewDocument(item)" />
+
+                <ButtonComponent icon="ri-image-line" tooltip="Ver comprobante"
+                  :color="item.image_url ? 'primary' : 'grey'" @click="viewImage(item)" />
+
                 <ButtonComponent :icon="item.is_active ? 'ri-toggle-fill' : 'ri-toggle-line'"
                   :tooltip="item.is_active ? 'Declaracion aprobada' : 'Declaracion desactivada'"
                   @click="desactivateDeclaration(item.id, item.is_active)" />
@@ -396,7 +528,9 @@ onMounted(async () => {
             <BaseDatatable tabletitle="MOVILIDAD" :headers="headersDDJJMovUser" :items="viaticItemsMovDeclaration">
               <!-- Aquí puedes agregar los detalles adicionales de la declaración -->
               <template #item.expense_date="{ item }">
-                {{ item.expense_date ? new Date(item.expense_date).toLocaleDateString() : '' }}
+                <VChip size="x-small" :color="item.limitDateExceeded ? 'error' : ''">
+                  {{ item.expense_real_date ? new Date(item.expense_real_date).toLocaleDateString() : '' }}
+                </VChip>
               </template>
 
               <template #item.option_data="{ item }">
@@ -407,7 +541,9 @@ onMounted(async () => {
               </template>
 
               <template #item.amount="{ item }">
-                $ {{ item.amount }}
+                <VChip size="x-small" :color="item.limitExceeded ? 'error' : ''">
+                  S/ {{ item.amount }}
+                </VChip>
               </template>
 
               <template #item.active="{ item }">
@@ -417,6 +553,13 @@ onMounted(async () => {
               </template>
 
               <template #item.actions="{ item }">
+
+
+                <ButtonComponent icon="ri-file-pdf-line" tooltip="Ver factura"
+                  :color="item.document_url ? 'primary' : 'grey'" @click="viewDocument(item)" />
+
+                <ButtonComponent icon="ri-image-line" tooltip="Ver comprobante"
+                  :color="item.image_url ? 'primary' : 'grey'" @click="viewImage(item)" />
 
                 <ButtonComponent :icon="item.is_active ? 'ri-toggle-fill' : 'ri-toggle-line'"
                   :tooltip="item.is_active ? 'Declaracion aprobada' : 'Declaracion desactivada'"
@@ -428,5 +571,19 @@ onMounted(async () => {
         </VCard>
       </VCol>
     </VRow>
+    <VDialog v-model="ImageDialog" max-width="600">
+      <VCard>
+        <VCardTitle>Comprobante</VCardTitle>
+
+        <VCardText class="text-center">
+          <img :src="selectedImage" style="max-width: 100%; border-radius: 8px;" />
+        </VCardText>
+
+        <VCardActions>
+          <VSpacer />
+          <VBtn text @click="ImageDialog = false">Cerrar</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>

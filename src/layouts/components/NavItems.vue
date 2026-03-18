@@ -34,7 +34,7 @@ const hasRole = (allowedRoles) => {
       :item="{ title: 'Declaraciones de Usuario', icon: 'ri-file-list-line', to: '/list-declaration-user' }" />
 
     <!-- vistas de gestion -->
-    <VerticalNavSectionTitle v-if="hasRole(['admin'])" :item="{
+    <VerticalNavSectionTitle v-if="hasRole(['admin', 'tesoreria', 'accounting'])" :item="{
       heading: 'Vistas de gestion',
     }" />
 
@@ -47,7 +47,7 @@ const hasRole = (allowedRoles) => {
     <VerticalNavLink v-if="hasRole(['admin'])"
       :item="{ title: 'Aprobacion de solicitudes', icon: 'ri-list-view', to: '/list-viaticos-adm' }" />
 
-    <VerticalNavLink v-if="hasRole(['admin'])"
+    <VerticalNavLink v-if="hasRole(['admin', 'tesoreria', 'accounting'])"
       :item="{ title: 'Aprobacion de declaraciones', icon: 'ri-file-list-line', to: '/list-declaration-adm' }" />
 
 

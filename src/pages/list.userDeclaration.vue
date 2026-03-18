@@ -31,10 +31,32 @@ const filters = ref({
   userId: user.id
 })
 
+const anlitycInfo = ref([])
+
 const statusList = [
   { text: 'Aprobado Tesorería', value: 'APROB_TESO' },
   { text: 'Declaracion aprobada', value: 'APROB_DEC_ADM' },
 ]
+
+const statusColor = (status) => {
+  switch (status) {
+    case 'POSITIVE':
+      return 'success'
+    case 'NEGATIVE':
+      return 'error'
+    default:
+      return 'default'
+  }
+}
+
+const loadAnalyticInfo = async () => {
+  try {
+    const response = await api.get(`/analitycs/`, { params: { userId: user.id } })
+    anlitycInfo.value = response.data.data[0]
+  } catch (error) {
+    console.error('Error loading analytic info:', error)
+  }
+}
 
 const loadUserDeclarations = async () => {
   try {
@@ -72,8 +94,9 @@ const generateDDJJPDF = (id) => {
   window.open(`${import.meta.env.VITE_API_URL}/decviatics/pdf/ddjj/${id}`, '_blank')
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadUserDeclarations()
+  await loadAnalyticInfo()
 })
 </script>
 
@@ -99,8 +122,22 @@ onMounted(() => {
           <VSelect density="compact" v-model="filters.status" :items="statusList" item-title="text" item-value="value"
             label="Estado" clearable />
         </VCol>
-
-
+        <VCol cols="12">
+          <VCard class="mb-4" color="primary" variant="outlined">
+            <VCardTitle>
+              Resumen de saldo
+            </VCardTitle>
+            <VCardText class="d-flex align-center">
+              <VRow dense>
+                <VCol cols="12">
+                  <div class="d-flex flex-column ga-1 ">
+                    Saldo : {{ anlitycInfo.total_balance }}
+                  </div>
+                </VCol>
+              </VRow>
+            </VCardText>
+          </VCard>
+        </VCol>
         <VCol cols="12">
           <BaseDatatable :headers="headersDeclarationsUser" :items="userDeclarationsList">
             <template #item.code="{ item }">
@@ -142,12 +179,8 @@ onMounted(() => {
 
 
             <template #item.balance="{ item }">
-              <VChip size="small" label class="mb-1">
-                Presupuesto: {{ item.budget_total }}
-              </VChip>
-              <br>
               <VChip size="small" label color="success">
-                Saldo: {{ item.deposit_amount }}
+                Depositado: {{ item.deposit_amount }}
               </VChip>
             </template>
 
@@ -157,7 +190,12 @@ onMounted(() => {
               </VChip>
               <br>
               <VChip size="small" label color="success">
-                Authorizado: {{ item.declare_active }}
+                Aprobado: {{ item.declare_active }}
+              </VChip>
+              <br>
+              <VChip size="small" label :color="statusColor(item.balance_amount > 0 ? 'POSITIVE' : 'NEGATIVE')">
+                Saldo:
+                {{ item.balance_amount }}
               </VChip>
             </template>
 

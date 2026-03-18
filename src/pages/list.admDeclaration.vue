@@ -38,6 +38,17 @@ const statusList = [
   { text: 'Declaracion aprobada', value: 'APROB_DEC_ADM' },
 ]
 
+const statusColor = (status) => {
+  switch (status) {
+    case 'POSITIVE':
+      return 'success'
+    case 'NEGATIVE':
+      return 'error'
+    default:
+      return 'default'
+  }
+}
+
 const loadAdmDeclarations = async () => {
   try {
 
@@ -176,7 +187,7 @@ onMounted(() => {
               </VChip>
               <br>
               <VChip size="small" label color="success">
-                Saldo: {{ item.deposit_amount }}
+                Depositado: {{ item.deposit_amount }}
               </VChip>
             </template>
 
@@ -186,8 +197,14 @@ onMounted(() => {
               </VChip>
               <br>
               <VChip size="small" label color="success">
-                Authorizado: {{ item.declare_active }}
+                Aprobado: {{ item.declare_active }}
               </VChip>
+              <br>
+              <VChip size="small" label :color="statusColor(item.balance_amount > 0 ? 'POSITIVE' : 'NEGATIVE')">
+                Saldo:
+                {{ item.balance_amount }}
+              </VChip>
+
             </template>
 
 

@@ -8,12 +8,18 @@ const props = defineProps({
     type: String,
     default: 'create',
   },
+
+  selectedtype: {
+    type: String,
+    default: null,
+  }
+
 })
 
 const emit = defineEmits(['saved', 'close'])
-import { ref, onMounted } from 'vue'
-import api from '@/services/api'
 import { useSnackbar } from '@/composables/useSnackbar'
+import api from '@/services/api'
+import { onMounted, ref } from 'vue'
 
 const isEdit = ref(props.mode === 'edit')
 const listDocumentTypes = ref(['LIQUIDACION', 'MOVILIDAD', 'DECLARACION_JURADA'])
@@ -22,7 +28,7 @@ const snackbar = useSnackbar()
 
 
 const FormConfig = ref({
-  documentType: 'LIQUIDACION',
+  documentType: null,
   category: 'ALIMENTACION',
   label: '',
 })
@@ -56,6 +62,8 @@ onMounted(() => {
     FormConfig.value.documentType = props.config.document_type
     FormConfig.value.category = props.config.category
     FormConfig.value.label = props.config.label
+  } else {
+    FormConfig.value.documentType = props.selectedtype || 'LIQUIDACION'
   }
 })
 </script>
@@ -69,7 +77,7 @@ onMounted(() => {
       <VDivider />
       <VCardText>
         <VRow>
-          <!-- {{ config }} -->
+          {{ config }}
           <VCol cols="12">
             <VSelect v-model="FormConfig.documentType" label="Tipo de Documento" :items="listDocumentTypes" />
           </VCol>

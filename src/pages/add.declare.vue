@@ -19,6 +19,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['saved', 'close'])
+import ButtonComponent from '@/components/buttonComponent.vue'
 import { useSnackbar } from '@/composables/useSnackbar'
 import api from '@/services/api'
 import { computed, onMounted, ref, watch } from 'vue'
@@ -27,6 +28,8 @@ import { VDateInput } from 'vuetify/labs/VDateInput'
 
 const isEdit = computed(() => props.mode === 'edit')
 const snackbar = useSnackbar()
+
+
 
 const Formdeclare = ref({
   viaticId: props.viatic.viatic_id,
@@ -43,12 +46,19 @@ const Formdeclare = ref({
   category: '',
   paymentMethod: 'EFECTIVO',
   movilityMethod: null,
+  DocumentFile: null,
+  imageFile: null,
+  removeDocument: false,
+  removeImage: false
 })
 
 const typesDocument = ref([''])
 const paymentMethods = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA']
 const mobilityMethods = ['TAXI', 'MOTOTAXI', 'COLECTIVO', 'BUS']
 const listOptions = ref([])
+const existingItem = ref(null)
+const ImageDialog = ref(false)
+const selectedImage = ref(null)
 const details = computed(() => props.details || {})
 
 const getOpcionswithType = async type => {
@@ -66,24 +76,58 @@ const getOpcionswithType = async type => {
 }
 
 const addDepositViatic = async () => {
-  // lógica para agregar provincia
   try {
-    const payload = { ...Formdeclare.value }
+
+    const formatDate = (date) => {
+      if (!date) return ''
+      return new Date(date).toISOString()
+    }
+
+    const formData = new FormData()
+    const form = Formdeclare.value
+
+    // Campos normales
+    formData.append('declareId', form.declareId)
+    formData.append('viaticId', form.viaticId)
+    formData.append('documentType', form.documentType)
+    // ⚠️ optionObject (importante)
+    formData.append('optionObject', JSON.stringify(form.optionObject))
+    formData.append('documentNumber', form.documentNumber || '')
+    formData.append('travelFrom', form.travelFrom || '')
+    formData.append('travelTo', form.travelTo || '')
+    formData.append('expenseDate', formatDate(form.expenseDate))
+    formData.append('expenseRealDate', formatDate(form.expenseRealDate))
+    formData.append('amount', form.amount)
+    formData.append('movilityMethod', form.movilityMethod || '')
+    formData.append('paymentMethod', form.paymentMethod)
+    formData.append('removeDocument', form.removeDocument || false)
+    formData.append('removeImage', form.removeImage || false)
+
+
+    const pdf = Array.isArray(form.DocumentFile) ? form.DocumentFile[0] : form.DocumentFile
+    const image = Array.isArray(form.imageFile) ? form.imageFile[0] : form.imageFile
+
+    if (pdf) {
+      formData.append('document', pdf)
+    }
+
+    if (image) {
+      formData.append('image', image)
+    }
 
     if (isEdit.value) {
-      // Editar provincia
-      await api.put(`/decviatics/expenses/`, payload)
-      snackbar.value = { show: true, message: 'Gasto actualizado exitosamente', color: 'success' }
+      await api.put(`/decviatics/expenses/`, formData)
     } else {
-      // Crear provincia
-      await api.post('/decviatics/expenses/', payload)
-      snackbar.value = { show: true, message: 'Gasto creado exitosamente', color: 'success' }
+      await api.post('/decviatics/expenses/', formData)
     }
+
+    snackbar.value = { show: true, message: 'Gasto guardado', color: 'success' }
     emit('saved')
     emit('close')
+
   } catch (err) {
     console.error(err)
-    snackbar.value = { show: true, message: 'No se pudo guardar el gasto', color: 'error' }
+    snackbar.value = { show: true, message: 'Error al guardar', color: 'error' }
   }
 }
 
@@ -120,6 +164,36 @@ const handleDocumentTypeChange = async (newType) => {
   await getOpcionswithType(newType)
 }
 
+const removePdf = () => {
+  Formdeclare.value.DocumentFile = null
+  Formdeclare.value.removeDocument = true
+}
+
+const removeImageFile = () => {
+  Formdeclare.value.imageFile = null
+  Formdeclare.value.removeImage = true
+}
+
+const viewDocument = (item) => {
+  if (!item.document_url) {
+    snackbar.open('No hay documento disponible', 'error')
+    return
+  }
+
+  const url = import.meta.env.VITE_APP_URL + item.document_url
+  window.open(url, '_blank')
+}
+
+const viewImage = (item) => {
+  if (!item.image_url) {
+    snackbar.open('No hay imagen disponible', 'error')
+    return
+  }
+
+  selectedImage.value = import.meta.env.VITE_APP_URL + item.image_url
+  ImageDialog.value = true
+}
+
 watch(isMovilidad, newVal => {
   if (!newVal) {
     Formdeclare.value.travelFrom = ''
@@ -147,6 +221,8 @@ onMounted(async () => {
   }
 
   if (isEdit.value) {
+    existingItem.value = props.item
+
     Object.assign(Formdeclare.value, {
       declareId: props.item.id,
       viaticId: props.viatic.viatic_id,
@@ -161,6 +237,13 @@ onMounted(async () => {
       paymentMethod: props.item.payment_method,
       movilityMethod: props.item.movility_methods,
       optionObject: props.item.optionobject,
+
+
+      DocumentFile: null,
+      imageFile: null,
+
+      removeDocument: false,
+      removeImage: false // No podemos cargar la imagen, solo indicamos que existe
     })
 
   }
@@ -175,6 +258,7 @@ onMounted(async () => {
       </VCardTitle>
       <VCardText>
         <VRow>
+
           <VCol cols="12" sm="6">
             <VAutocomplete v-model="Formdeclare.documentType" :items="typesDocument" label="TIPO"
               @update:model-value="handleDocumentTypeChange" outlined dense />
@@ -209,19 +293,18 @@ onMounted(async () => {
           <VCol v-if="isMovilidad" cols="12" sm="6">
             <VTextField v-model="Formdeclare.travelTo" label="Hasta" outlined dense />
           </VCol>
-
           <VCol cols="12" sm="6">
-            <VDateInput v-model="Formdeclare.expenseDate" :error="isOutOfRange(Formdeclare.expenseDate)"
-              :error-messages="isOutOfRange(Formdeclare.expenseDate)
-                ? 'La fecha está fuera del rango del viático'
-                : ''
-                " label="Fecha de facturacion" variant="outlined" />
-          </VCol>
-          <VCol v-if="Formdeclare.documentType === 'LIQUIDACION'" cols="12" sm="6">
             <VDateInput v-model="Formdeclare.expenseRealDate" :error="isOutOfRange(Formdeclare.expenseRealDate)"
               :error-messages="isOutOfRange(Formdeclare.expenseRealDate)
                 ? 'La fecha está fuera del rango del viático'
                 : ''" label="Fecha de Gasto" prepend-icon="" variant="outlined" />
+          </VCol>
+
+          <VCol v-if="Formdeclare.documentType === 'LIQUIDACION'" cols="12" sm="6">
+            <VDateInput v-model="Formdeclare.expenseDate" :error="isOutOfRange(Formdeclare.expenseDate)"
+              :error-messages="isOutOfRange(Formdeclare.expenseDate)
+                ? 'La fecha está fuera del rango del viático'
+                : ''" label="Fecha de facturacion" variant="outlined" />
           </VCol>
           <VCol cols="12" sm="6">
             <VTextField v-model="Formdeclare.amount" label="Monto" type="number" outlined dense />
@@ -234,6 +317,42 @@ onMounted(async () => {
             <VSelect v-model="Formdeclare.paymentMethod" label="Método de Pago" :items="paymentMethods" outlined
               dense />
           </VCol>
+          <VCol v-if="Formdeclare.documentType === 'LIQUIDACION' && !existingItem?.document_url" cols="12" sm="6">
+            <VFileInput v-model="Formdeclare.DocumentFile" label="Subir PDF" accept="application/pdf"
+              prepend-icon="mdi-file-pdf-box" show-size />
+          </VCol>
+
+
+
+          <VCol v-if="!existingItem?.image_url" cols="12" sm="6">
+            <VFileInput v-model="Formdeclare.imageFile" label="Subir imagen o tomar foto" accept="image/*"
+              capture="environment" prepend-icon="mdi-camera" show-size />
+          </VCol>
+
+          <VCol v-if="isEdit && existingItem?.document_url" cols="12">
+            <div class="d-flex justify-space-between">
+              <VChip size="small" label :color="Formdeclare.removeDocument ? 'error' : 'success'">
+                📄 Documento cargado </VChip>
+              <div>
+                <ButtonComponent icon="ri-eye-line" @click="viewDocument(existingItem)" />
+                <ButtonComponent icon="ri-delete-bin-line" color="error" @click="removePdf" />
+              </div>
+            </div>
+          </VCol>
+
+          <VCol v-if="isEdit && existingItem?.image_url" cols="12">
+            <div class="d-flex justify-space-between">
+              <VChip size="small" label :color="Formdeclare.removeImage ? 'error' : 'success'">
+                🖼️ Imagen cargada
+              </VChip>
+
+              <div>
+                <ButtonComponent icon="ri-eye-line" @click="viewImage(existingItem)" />
+                <ButtonComponent icon="ri-delete-bin-line" color="error" @click="removeImageFile" />
+              </div>
+            </div>
+          </VCol>
+
         </VRow>
       </VCardText>
       <VCardActions>
@@ -244,5 +363,20 @@ onMounted(async () => {
         </VBtn>
       </VCardActions>
     </VCard>
+
+    <VDialog v-model="ImageDialog" max-width="600">
+      <VCard>
+        <VCardTitle>Comprobante</VCardTitle>
+
+        <VCardText class="text-center">
+          <img :src="selectedImage" style="max-width: 100%; border-radius: 8px;" />
+        </VCardText>
+
+        <VCardActions>
+          <VSpacer />
+          <VBtn text @click="ImageDialog = false">Cerrar</VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
   </div>
 </template>
